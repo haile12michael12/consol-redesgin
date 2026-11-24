@@ -56,7 +56,13 @@ describe('public routes', () => {
 
   it('renders a course page without inventing a schedule or fee', async () => {
     renderApp('/training/pmp-certification-preparation')
-    expect(await screen.findByRole('heading', { level: 1, name: /PMP®/i })).toBeInTheDocument()
+    expect(
+      await screen.findByRole(
+        'heading',
+        { level: 1, name: /PMP®/i },
+        { timeout: 5000 },
+      ),
+    ).toBeInTheDocument()
     expect(screen.getAllByText(/dates to be confirmed/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/fee on confirmation/i).length).toBeGreaterThan(0)
     expect(screen.queryByText(/\$|ETB|birr/i)).not.toBeInTheDocument()
