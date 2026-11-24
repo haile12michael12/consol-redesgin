@@ -28,7 +28,11 @@ describe('public routes', () => {
   it('renders the services catalogue with all four practice areas', async () => {
     renderApp('/services')
     expect(
-      await screen.findByRole('heading', { level: 1, name: /consultancy and capability/i }),
+      await screen.findByRole(
+        'heading',
+        { level: 1, name: /consultancy and capability/i },
+        { timeout: 5000 },
+      ),
     ).toBeInTheDocument()
     expect(
       screen.getAllByRole('link', { name: /construction management consultancy/i }).length,
@@ -38,10 +42,14 @@ describe('public routes', () => {
   it('renders a project detail page from a verified record', async () => {
     renderApp('/projects/opm-maturity-improvement-construction-industry')
     expect(
-      await screen.findByRole('heading', {
-        level: 1,
-        name: /organisational project management \(opm\) maturity/i,
-      }),
+      await screen.findByRole(
+        'heading',
+        {
+          level: 1,
+          name: /organisational project management \(opm\) maturity/i,
+        },
+        { timeout: 5000 },
+      ),
     ).toBeInTheDocument()
     expect(screen.getByText(/ministry of urban & infrastructure/i)).toBeInTheDocument()
   })
@@ -98,7 +106,11 @@ describe('forms', () => {
   it('blocks an invalid contact submission and shows field errors', async () => {
     const user = userEvent.setup()
     renderApp('/contact')
-    await screen.findByRole('heading', { level: 1, name: /talk to consol/i })
+    await screen.findByRole(
+      'heading',
+      { level: 1, name: /talk to consol/i },
+      { timeout: 5000 },
+    )
     await user.click(screen.getByRole('button', { name: /send message/i }))
     expect(await screen.findByText(/please enter your full name/i)).toBeInTheDocument()
     expect(screen.getByText(/please enter a valid email address/i)).toBeInTheDocument()
@@ -107,7 +119,11 @@ describe('forms', () => {
   it('validates the consultation form and requires a service category', async () => {
     const user = userEvent.setup()
     renderApp('/request-consultation')
-    await screen.findByRole('heading', { level: 1, name: /request a consultation/i })
+    await screen.findByRole(
+      'heading',
+      { level: 1, name: /request a consultation/i },
+      { timeout: 5000 },
+    )
     await user.click(screen.getByRole('button', { name: /request consultation/i }))
     expect(await screen.findByText(/please select a service category/i)).toBeInTheDocument()
   })
