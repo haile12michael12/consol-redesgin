@@ -171,11 +171,18 @@ export function AdminLayout() {
   const activeSection = [...adminNav]
     .sort((left, right) => right.to.length - left.to.length)
     .find((item) => location.pathname.startsWith(item.to))
+    ?? (location.pathname === '/admin' ? adminNav[0] : null)
   const requiredPermission = activeSection ? permissionByPath[activeSection.to] : null
   const userPermissions = new Set(auth.data.roles?.flatMap((role) => role.permissions.map((permission) => permission.name)) ?? [])
   const isAdministrator = auth.data.is_admin || auth.data.roles?.some((role) => role.name === 'administrator')
   if (requiredPermission && !isAdministrator && !userPermissions.has(requiredPermission)) {
-    return <Navigate to="/admin/dashboard" replace />
+    const firstAllowedSection = adminNav.find((item) => userPermissions.has(permissionByPath[item.to]))
+    if (firstAllowedSection) return <Navigate to={firstAllowedSection.to} replace />
+    return (
+      <div className="shell section">
+        <ErrorState title="No administration modules assigned" text="Ask an administrator to assign an access role to your account." />
+      </div>
+    )
   }
 
   return (
