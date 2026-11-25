@@ -34,24 +34,30 @@ export function ConsultationForm() {
     resolver: zodResolver(consultationSchema),
     defaultValues: {
       name: '',
-      organisation: '',
+      organization: '',
       email: '',
       phone: '',
-      service: initialService,
-      subject: '',
-      message: '',
-      preferredContact: 'email',
+      serviceOfInterest: initialService,
+      projectDescription: '',
+      preferredContactMethod: 'email',
+      website: '',
     },
   })
 
-  const service = watch('service')
+  const service = watch('serviceOfInterest')
 
   const onSubmit = async (values) => {
     setStatus('pending')
     setServerError(null)
     const result = await submitConsultation({
-      ...values,
-      source: 'website-consultation',
+      name: values.name,
+      email: values.email,
+      phone: values.phone,
+      organization: values.organization,
+      service_of_interest: values.serviceOfInterest,
+      project_description: values.projectDescription,
+      preferred_contact_method: values.preferredContactMethod,
+      website: values.website,
     })
     if (result.ok) {
       setSource(result.source)
@@ -91,13 +97,13 @@ export function ConsultationForm() {
           error={errors.name ? t(errors.name.message) : undefined}
         />
         <FormField
-          id="consult-organisation"
+          id="consult-organization"
           label={t('common.organisation')}
           required
           autoComplete="organization"
           placeholder="Company or institution"
-          register={register('organisation')}
-          error={errors.organisation ? t(errors.organisation.message) : undefined}
+          register={register('organization')}
+          error={errors.organization ? t(errors.organization.message) : undefined}
         />
         <FormField
           id="consult-email"
@@ -129,7 +135,7 @@ export function ConsultationForm() {
           <Select
             value={service}
             onValueChange={(value) =>
-              setValue('service', value, { shouldValidate: true, shouldDirty: true })
+              setValue('serviceOfInterest', value, { shouldValidate: true, shouldDirty: true })
             }
           >
             <SelectTrigger id="consult-service" invalid={Boolean(errors.service)} aria-describedby={errors.service ? 'consult-service-error' : undefined}>
@@ -145,7 +151,7 @@ export function ConsultationForm() {
               <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>
-          <input type="hidden" {...register('service')} />
+          <input type="hidden" {...register('serviceOfInterest')} />
           {errors.service && (
             <p id="consult-service-error" className="field-error" role="alert">
               {t(errors.service.message)}
@@ -156,8 +162,8 @@ export function ConsultationForm() {
         <div className="space-y-2">
           <Label htmlFor="consult-preferred">{t('consult.form.preferred')}</Label>
           <Select
-            defaultValue="email"
-            onValueChange={(value) => setValue('preferredContact', value)}
+            value={watch('preferredContactMethod')}
+            onValueChange={(value) => setValue('preferredContactMethod', value)}
           >
             <SelectTrigger id="consult-preferred">
               <SelectValue />
@@ -171,23 +177,23 @@ export function ConsultationForm() {
       </div>
 
       <FormField
-        id="consult-subject"
-        label={t('common.subject')}
-        required
-        placeholder={t('contact.form.subjectPlaceholder')}
-        register={register('subject')}
-        error={errors.subject ? t(errors.subject.message) : undefined}
-      />
-
-      <FormField
-        id="consult-message"
-        label={t('common.message')}
+        id="consult-project-description"
+        label={t('consult.form.description')}
         required
         textarea
         rows={5}
         placeholder={t('contact.form.messagePlaceholder')}
-        register={register('message')}
-        error={errors.message ? t(errors.message.message) : undefined}
+        register={register('projectDescription')}
+        error={errors.projectDescription ? t(errors.projectDescription.message) : undefined}
+      />
+
+      <input
+        type="text"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="absolute left-[-10000px] h-px w-px overflow-hidden"
+        {...register('website')}
       />
 
       <SubmitButton pending={status === 'pending'} pendingLabel={t('common.sending')} variant="primary" size="lg">

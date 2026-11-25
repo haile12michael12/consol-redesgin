@@ -10,9 +10,7 @@ import { contact } from '@/lib/site'
 import { usePageMeta } from '@/lib/seo'
 import { team } from '@/data/team'
 
-const mapsQuery = encodeURIComponent(
-  'Meskel Flower, Wello Sefer Street, Martereza Building, Addis Ababa, Ethiopia',
-)
+const mapsQuery = encodeURIComponent(contact.addressLines.join(', '))
 
 export function ContactPage() {
   const t = useT()
@@ -162,27 +160,14 @@ export function ContactPage() {
           />
 
           <div className="mt-8 grid gap-px bg-line lg:grid-cols-[1.3fr_0.7fr]">
-            <div className="relative min-h-[18rem] overflow-hidden bg-navy">
-              <div className="hairline-grid absolute inset-0 opacity-40" aria-hidden="true" />
-              <div className="absolute inset-0 grid place-items-center p-8 text-center">
-                <div>
-                  <MapPin className="mx-auto size-7 text-gold" aria-hidden="true" />
-                  <p className="mt-4 text-[0.875rem] font-semibold text-white">Interactive map pending</p>
-                  <p className="mx-auto mt-2 max-w-xs text-[0.75rem] leading-relaxed text-white/50">
-                    {contact.addressLines.join(', ')}
-                  </p>
-                  <Button asChild variant="outline-invert" size="sm" className="mt-5">
-                    <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${mapsQuery}`}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                    >
-                      Google Maps
-                      <ExternalLink className="size-3.5" aria-hidden="true" />
-                    </a>
-                  </Button>
-                </div>
-              </div>
+            <div className="relative min-h-[18rem] overflow-hidden bg-white">
+              <iframe
+                title="CONSOL office location map"
+                src={`https://www.google.com/maps?q=${mapsQuery}&output=embed`}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="absolute inset-0 h-full w-full border-0"
+              />
             </div>
 
             <div className="flex flex-col justify-between bg-white p-7">
@@ -202,7 +187,7 @@ export function ContactPage() {
           </div>
 
           <Notice className="mt-6">
-            Business hours and exact map coordinates are not published by CONSOL. Please call or email before visiting.
+            Business hours are not published. Please call or email to confirm availability before visiting.
           </Notice>
         </div>
       </section>

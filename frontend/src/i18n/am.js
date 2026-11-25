@@ -271,6 +271,7 @@ const am = {
   'consult.hero.title': 'ምክክር ይጠይቁ።',
   'consult.side.title': 'ቀጥሎ ምን ይሆናል',
   'consult.form.service': 'የአገልግሎት ምድብ',
+  'consult.form.description': 'የፕሮጀክት መግለጫ',
   'consult.form.preferred': 'የሚመርጡት የግንኙነት መንገድ',
 
   'form.nameError': 'እባክዎ ሙሉ ስምዎን ያስገቡ።',

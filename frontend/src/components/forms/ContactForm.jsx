@@ -23,13 +23,13 @@ export function ContactForm() {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(contactSchema),
-    defaultValues: { name: '', email: '', phone: '', subject: '', message: '', consent: false },
+    defaultValues: { name: '', email: '', phone: '', organization: '', subject: '', message: '', consent: false, website: '' },
   })
 
   const onSubmit = async (values) => {
     setStatus('pending')
     setServerError(null)
-    const result = await submitInquiry({ ...values, source: 'website-contact' })
+    const result = await submitInquiry(values)
     if (result.ok) {
       setSource(result.source)
       setStatus('success')
@@ -85,6 +85,14 @@ export function ContactForm() {
           error={errors.phone ? t(errors.phone.message) : undefined}
         />
         <FormField
+          id="contact-organization"
+          label={t('common.organisation')}
+          autoComplete="organization"
+          hint={t('common.optional')}
+          register={register('organization')}
+          error={errors.organization ? t(errors.organization.message) : undefined}
+        />
+        <FormField
           id="contact-subject"
           label={t('common.subject')}
           required
@@ -103,6 +111,15 @@ export function ContactForm() {
         placeholder={t('contact.form.messagePlaceholder')}
         register={register('message')}
         error={errors.message ? t(errors.message.message) : undefined}
+      />
+
+      <input
+        type="text"
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="absolute left-[-10000px] h-px w-px overflow-hidden"
+        {...register('website')}
       />
 
       <div className="space-y-2">

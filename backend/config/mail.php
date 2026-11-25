@@ -115,4 +115,9 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    'inquiries_to' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('INQUIRY_NOTIFICATION_EMAILS', '')),
+    ))),
+
 ];

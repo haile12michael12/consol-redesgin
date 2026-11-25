@@ -118,6 +118,9 @@ const CertificatesAdminPage = lazy(() =>
 const NewsAdminPage = lazy(() =>
   import('@/pages/admin/NewsAdminPage').then((m) => ({ default: m.NewsAdminPage })),
 )
+const InquiriesAdminPage = lazy(() =>
+  import('@/pages/admin/InquiriesAdminPage').then((m) => ({ default: m.InquiriesAdminPage })),
+)
 
 function SuspenseBoundary({ children }) {
   return <Suspense fallback={<RouteFallback />}>{children}</Suspense>
@@ -222,7 +225,7 @@ export default function AppRoutes() {
         />
         <Route
           path="inquiries"
-          element={<SuspenseBoundary><AdminModulePage moduleKey="inquiries" /></SuspenseBoundary>}
+          element={<SuspenseBoundary><InquiriesAdminPage /></SuspenseBoundary>}
         />
         <Route
           path="analytics"

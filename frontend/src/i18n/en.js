@@ -485,13 +485,13 @@ const en = {
   'contact.hoursPending': 'Business hours are not published. Please call or email to confirm availability.',
   'contact.map': 'Office location',
   'contact.mapPending':
-    'An interactive map will be added once the exact office coordinates are confirmed by CONSOL.',
+    'Find the verified CONSOL office address in Addis Ababa.',
   'contact.mapCta': 'Open in Google Maps',
   'contact.form.title': 'Send a message',
   'contact.form.text': 'Use this form for general enquiries. For consultancy or training, the consultation form collects more detail.',
   'contact.form.success': 'Message received',
   'contact.form.successText':
-    'Thank you for contacting CONSOL. Your message has been recorded in this demonstration environment. In production it is delivered to the Laravel API.',
+    'Thank you for contacting CONSOL. Your enquiry has been received and the team will follow up using the details you provided.',
   'contact.form.error': 'Message not sent',
   'contact.form.errorText': 'The service is unavailable right now. Please email us directly at',
   'contact.form.subjectPlaceholder': 'How can we help?',
@@ -514,9 +514,10 @@ const en = {
   'consult.form.service': 'Service category',
   'consult.form.servicePlaceholder': 'Select a service area',
   'consult.form.serviceError': 'Please select a service category.',
+  'consult.form.description': 'Project description',
   'consult.form.success': 'Consultation request received',
   'consult.form.successText':
-    'Thank you — your request has been recorded in this demonstration environment. In production it is delivered to the Laravel API and routed to the relevant practice lead.',
+    'Thank you. Your request has been received and will be reviewed by the relevant CONSOL practice team.',
   'consult.form.error': 'Request not sent',
   'consult.form.errorText': 'The service is unavailable right now. Please email us directly at',
   'consult.form.preferred': 'Preferred contact method',

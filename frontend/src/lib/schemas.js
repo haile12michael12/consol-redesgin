@@ -28,20 +28,22 @@ export const contactSchema = z.object({
   name,
   email,
   phone: phone.optional().or(z.literal('')),
+  organization: z.string().trim().max(160, { message: 'form.tooLong' }).optional().or(z.literal('')),
   subject,
   message,
   consent: z.literal(true, { message: 'contact.form.consentError' }),
+  website: z.string().max(0, { message: 'form.tooLong' }).optional(),
 })
 
 export const consultationSchema = z.object({
   name,
-  organisation: z.string().trim().min(2, { message: 'form.orgError' }).max(160, { message: 'form.tooLong' }),
+  organization: z.string().trim().min(2, { message: 'form.orgError' }).max(160, { message: 'form.tooLong' }),
   email,
   phone,
-  service: z.string().min(1, { message: 'consult.form.serviceError' }),
-  subject,
-  message,
-  preferredContact: z.enum(['email', 'phone']).default('email'),
+  serviceOfInterest: z.string().min(1, { message: 'consult.form.serviceError' }),
+  projectDescription: message,
+  preferredContactMethod: z.enum(['email', 'phone']).default('email'),
+  website: z.string().max(0, { message: 'form.tooLong' }).optional(),
 })
 
 export const registrationSchema = z.object({

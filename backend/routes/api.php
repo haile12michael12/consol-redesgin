@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CertificateController;
 use App\Http\Controllers\Api\CourseController;
+use App\Http\Controllers\Api\InquiryController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\RegistrationController;
@@ -28,6 +29,18 @@ Route::middleware(['web', 'auth', 'admin'])->prefix('admin/services')->group(fun
     Route::put('/{service}', [ServiceController::class, 'update']);
     Route::delete('/{service}', [ServiceController::class, 'destroy']);
 });
+
+Route::middleware(['web', 'auth', 'admin'])->prefix('admin/inquiries')->group(function () {
+    Route::get('/', [InquiryController::class, 'adminIndex']);
+    Route::get('/assignees', [InquiryController::class, 'assignees']);
+    Route::get('/export', [InquiryController::class, 'export']);
+    Route::get('/{inquiry}', [InquiryController::class, 'show']);
+    Route::put('/{inquiry}', [InquiryController::class, 'update']);
+    Route::post('/{inquiry}/notes', [InquiryController::class, 'addNote']);
+});
+
+Route::post('/inquiries', [InquiryController::class, 'storeContact'])->middleware('throttle:5,1');
+Route::post('/consultations', [InquiryController::class, 'storeConsultation'])->middleware('throttle:5,1');
 
 Route::middleware(['web', 'auth', 'admin'])->prefix('admin/projects')->group(function () {
     Route::get('/', [ProjectController::class, 'adminIndex']);
