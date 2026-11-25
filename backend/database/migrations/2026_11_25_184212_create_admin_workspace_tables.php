@@ -65,6 +65,24 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        foreach ([
+            'site.name' => 'Construction Solutions PLC',
+            'site.tagline' => 'Your partner in growth',
+            'contact.email' => 'info@constructionsolutionsplc.com',
+            'contact.landline' => '+251 114 70 04 52',
+            'contact.mobile' => '+251 911 51 30 11',
+            'contact.address' => 'Meskel Flower to Wello Sefer Street, Martereza Building, 3rd Floor, Suite 301, Addis Ababa, Ethiopia',
+        ] as $key => $value) {
+            DB::table('settings')->insert([
+                'key' => $key,
+                'group' => str($key)->before('.')->toString(),
+                'value' => json_encode($value, JSON_THROW_ON_ERROR),
+                'is_public' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
         $permissionNames = [
             'pages.manage', 'services.manage', 'projects.manage', 'training.manage',
             'registrations.manage', 'certificates.manage', 'news.manage', 'resources.manage',
@@ -81,9 +99,9 @@ return new class extends Migration
 
         $roles = [
             'administrator' => ['Administrator', $permissionNames],
-            'content_editor' => ['Content editor', ['pages.manage', 'services.manage', 'projects.manage', 'news.manage', 'resources.manage', 'media.manage']],
-            'training_manager' => ['Training manager', ['training.manage', 'registrations.manage', 'certificates.manage']],
-            'inquiry_manager' => ['Inquiry manager', ['inquiries.manage']],
+            'content_editor' => ['Content editor', ['analytics.view', 'pages.manage', 'services.manage', 'projects.manage', 'news.manage', 'resources.manage', 'media.manage']],
+            'training_manager' => ['Training manager', ['analytics.view', 'training.manage', 'registrations.manage', 'certificates.manage']],
+            'inquiry_manager' => ['Inquiry manager', ['analytics.view', 'inquiries.manage']],
         ];
 
         foreach ($roles as $name => [$label, $assignedPermissions]) {

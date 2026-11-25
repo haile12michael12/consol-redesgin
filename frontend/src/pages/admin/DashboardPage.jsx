@@ -130,13 +130,17 @@ export function DashboardPage() {
 
         <AdminPanel title={t('admin.quickActions')}>
           <ul className="divide-y divide-line">
-            {quickActions.map(({ label, to, Icon }) => (
-              <li key={to}>
-                <Link to={to} className="flex items-center gap-3 px-5 py-3 text-[0.8125rem] font-medium text-navy hover:bg-canvas/60">
-                  <Icon className="size-4 text-gold-deep" aria-hidden="true" />
-                  {label}
-                </Link>
-              ))}
+            {quickActions.map((action) => {
+              const Icon = action.Icon
+              return (
+                <li key={action.to}>
+                  <Link to={action.to} className="flex items-center gap-3 px-5 py-3 text-[0.8125rem] font-medium text-navy hover:bg-canvas/60">
+                    <Icon className="size-4 text-gold-deep" aria-hidden="true" />
+                    {action.label}
+                  </Link>
+                </li>
+              )
+            })}
           </ul>
         </AdminPanel>
       </div>

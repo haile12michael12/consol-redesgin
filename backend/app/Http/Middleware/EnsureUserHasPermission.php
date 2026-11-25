@@ -8,9 +8,12 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserHasPermission
 {
-    public function handle(Request $request, Closure $next, string $permission): Response
+    public function handle(Request $request, Closure $next, string ...$permissions): Response
     {
-        if (! $request->user()?->hasPermission($permission)) {
+        $allowed = $request->user()?->canAccessAdmin()
+            && collect($permissions)->contains(fn (string $permission): bool => $request->user()->hasPermission($permission));
+
+        if (! $allowed) {
             abort(403, 'The assigned role does not permit this action.');
         }
 

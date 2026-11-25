@@ -1,17 +1,21 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CertificateController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\InquiryController;
+use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\NewsController;
 use App\Http\Controllers\Api\PageController;
 use App\Http\Controllers\Api\ProjectController;
 use App\Http\Controllers\Api\RegistrationController;
+use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\ServiceController;
+use App\Http\Controllers\Api\SettingController;
+use App\Http\Controllers\Api\UserController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/health', fn () => response()->json([
     'status' => 'ok',
@@ -37,6 +41,37 @@ Route::middleware(['web', 'auth', 'admin', 'permission:pages.manage'])->prefix('
     Route::post('/', [PageController::class, 'store']);
     Route::put('/{page}', [PageController::class, 'update']);
     Route::delete('/{page}', [PageController::class, 'destroy']);
+});
+
+Route::middleware(['web', 'auth', 'admin', 'permission:media.manage'])->prefix('admin/media')->group(function () {
+    Route::get('/', [MediaController::class, 'index']);
+    Route::post('/', [MediaController::class, 'store']);
+    Route::get('/{media}/file', [MediaController::class, 'file'])->name('api.admin.media.file');
+    Route::delete('/{media}', [MediaController::class, 'destroy']);
+});
+
+Route::middleware(['web', 'auth', 'admin', 'permission:settings.manage'])->prefix('admin/settings')->group(function () {
+    Route::get('/', [SettingController::class, 'index']);
+    Route::post('/', [SettingController::class, 'store']);
+    Route::put('/{setting}', [SettingController::class, 'update']);
+    Route::delete('/{setting}', [SettingController::class, 'destroy']);
+});
+
+Route::get('/settings/public', [SettingController::class, 'publicIndex']);
+
+Route::middleware(['web', 'auth', 'admin', 'permission:users.manage'])->prefix('admin/users')->group(function () {
+    Route::get('/', [UserController::class, 'index']);
+    Route::post('/', [UserController::class, 'store']);
+    Route::put('/{user}', [UserController::class, 'update']);
+    Route::delete('/{user}', [UserController::class, 'destroy']);
+});
+
+Route::middleware(['web', 'auth', 'admin', 'permission:users.manage'])->prefix('admin/roles')->group(function () {
+    Route::get('/', [RoleController::class, 'index']);
+    Route::get('/permissions', [RoleController::class, 'permissions']);
+    Route::post('/', [RoleController::class, 'store']);
+    Route::put('/{role}', [RoleController::class, 'update']);
+    Route::delete('/{role}', [RoleController::class, 'destroy']);
 });
 
 Route::get('/pages', [PageController::class, 'index']);
@@ -122,7 +157,7 @@ Route::get('/events', [NewsController::class, 'events']);
 Route::get('/events/{slug}', [NewsController::class, 'showEvent']);
 Route::get('/resources', [NewsController::class, 'resources']);
 
-Route::middleware(['web', 'auth', 'admin', 'permission:training.manage'])->prefix('admin/training')->group(function () {
+Route::middleware(['web', 'auth', 'admin', 'permission:training.manage,registrations.manage,certificates.manage'])->prefix('admin/training')->group(function () {
     Route::get('/courses', [CourseController::class, 'adminIndex']);
     Route::post('/courses', [CourseController::class, 'store']);
     Route::put('/courses/{course}', [CourseController::class, 'update']);

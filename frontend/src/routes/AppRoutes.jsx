@@ -97,11 +97,8 @@ const AnalyticsAdminPage = lazy(() =>
 const PagesAdminPage = lazy(() =>
   import('@/pages/admin/PagesCmsAdminPage').then((m) => ({ default: m.PagesCmsAdminPage })),
 )
-const AdminModulePage = lazy(() =>
-  import('@/pages/admin/AdminModulePage').then((m) => ({ default: m.AdminModulePage })),
-)
 const SettingsPage = lazy(() =>
-  import('@/pages/admin/SettingsPage').then((m) => ({ default: m.SettingsPage })),
+  import('@/pages/admin/SettingsAdminPage').then((m) => ({ default: m.SettingsAdminPage })),
 )
 const ServicesAdminPage = lazy(() =>
   import('@/pages/admin/ServicesAdminPage').then((m) => ({ default: m.ServicesAdminPage })),
@@ -123,6 +120,12 @@ const NewsAdminPage = lazy(() =>
 )
 const InquiriesAdminPage = lazy(() =>
   import('@/pages/admin/InquiriesAdminPage').then((m) => ({ default: m.InquiriesAdminPage })),
+)
+const UsersAdminPage = lazy(() =>
+  import('@/pages/admin/UsersAdminPage').then((m) => ({ default: m.UsersAdminPage })),
+)
+const MediaAdminPage = lazy(() =>
+  import('@/pages/admin/MediaAdminPage').then((m) => ({ default: m.MediaAdminPage })),
 )
 
 function SuspenseBoundary({ children }) {
@@ -196,7 +199,7 @@ export default function AppRoutes() {
         <Route path="pages" element={<SuspenseBoundary><PagesAdminPage /></SuspenseBoundary>} />
         <Route
           path="company-profile"
-          element={<SuspenseBoundary><AdminModulePage moduleKey="profile" /></SuspenseBoundary>}
+          element={<SuspenseBoundary><SettingsPage /></SuspenseBoundary>}
         />
         <Route
           path="services"
@@ -224,7 +227,7 @@ export default function AppRoutes() {
         />
         <Route
           path="media"
-          element={<SuspenseBoundary><AdminModulePage moduleKey="media" /></SuspenseBoundary>}
+          element={<SuspenseBoundary><MediaAdminPage /></SuspenseBoundary>}
         />
         <Route
           path="inquiries"
@@ -236,7 +239,7 @@ export default function AppRoutes() {
         />
         <Route
           path="users"
-          element={<SuspenseBoundary><AdminModulePage moduleKey="users" /></SuspenseBoundary>}
+          element={<SuspenseBoundary><UsersAdminPage /></SuspenseBoundary>}
         />
         <Route path="settings" element={<SuspenseBoundary><SettingsPage /></SuspenseBoundary>} />
       </Route>

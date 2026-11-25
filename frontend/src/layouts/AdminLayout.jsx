@@ -168,6 +168,16 @@ export function AdminLayout() {
   }
   if (!auth.data?.is_admin && !auth.data?.roles?.length) return <Navigate to="/admin/login" replace state={{ from: location }} />
 
+  const activeSection = [...adminNav]
+    .sort((left, right) => right.to.length - left.to.length)
+    .find((item) => location.pathname.startsWith(item.to))
+  const requiredPermission = activeSection ? permissionByPath[activeSection.to] : null
+  const userPermissions = new Set(auth.data.roles?.flatMap((role) => role.permissions.map((permission) => permission.name)) ?? [])
+  const isAdministrator = auth.data.is_admin || auth.data.roles?.some((role) => role.name === 'administrator')
+  if (requiredPermission && !isAdministrator && !userPermissions.has(requiredPermission)) {
+    return <Navigate to="/admin/dashboard" replace />
+  }
+
   return (
     <div className="min-h-screen bg-[#f6f7f9]">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 lg:block">
