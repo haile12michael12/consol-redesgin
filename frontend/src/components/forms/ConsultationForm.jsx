@@ -1,6 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useSearchParams } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { FormField, FormGrid } from './FormField'
 import { FormError, FormSuccess } from './FormFeedback'
@@ -15,6 +16,9 @@ import { submitConsultation } from '@/services/inquiriesApi'
 
 export function ConsultationForm() {
   const t = useT()
+  const [searchParams] = useSearchParams()
+  const requestedService = searchParams.get('service')
+  const initialService = services.some((item) => item.slug === requestedService) ? requestedService : ''
   const [status, setStatus] = useState('idle')
   const [source, setSource] = useState(null)
   const [serverError, setServerError] = useState(null)
@@ -33,7 +37,7 @@ export function ConsultationForm() {
       organisation: '',
       email: '',
       phone: '',
-      service: '',
+      service: initialService,
       subject: '',
       message: '',
       preferredContact: 'email',
@@ -137,7 +141,7 @@ export function ConsultationForm() {
                   {t(item.titleKey)}
                 </SelectItem>
               ))}
-              <SelectItem value="certification">{t('training.cat.pmi')} / {t('training.cat.autodesk')}</SelectItem>
+              <SelectItem value="training">{t('service.training.shortTitle')}</SelectItem>
               <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>

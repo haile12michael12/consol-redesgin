@@ -1,7 +1,9 @@
 import { ArrowUpRight, Mail, MapPin, Phone } from 'lucide-react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Logo } from '@/components/common/Logo'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { useT } from '@/i18n/LanguageProvider'
 import { company, contact, credentials } from '@/lib/site'
 import { footerNav } from '@/lib/navigation'
@@ -27,6 +29,65 @@ function FooterColumn({ heading, links }) {
           </li>
         ))}
       </ul>
+    </div>
+  )
+}
+
+function NewsletterForm() {
+  const t = useT()
+  const [email, setEmail] = useState('')
+  const [requestReady, setRequestReady] = useState(false)
+  const mailto = `mailto:${contact.email}?subject=${encodeURIComponent(
+    'Newsletter subscription request',
+  )}&body=${encodeURIComponent(`Please add ${email} to CONSOL email updates.`)}`
+
+  return (
+    <div>
+      <h2 className="text-[0.625rem] font-bold uppercase tracking-[0.18em] text-white/55">
+        {t('footer.newsletter')}
+      </h2>
+      <p className="mt-4 text-[0.8125rem] leading-relaxed text-white/65">
+        {t('footer.newsletterText')}
+      </p>
+      <form
+        className="mt-4 space-y-3"
+        onSubmit={(event) => {
+          event.preventDefault()
+          setRequestReady(true)
+        }}
+      >
+        <label htmlFor="footer-newsletter-email" className="sr-only">
+          {t('common.email')}
+        </label>
+        <Input
+          id="footer-newsletter-email"
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(event) => {
+            setEmail(event.target.value)
+            setRequestReady(false)
+          }}
+          placeholder={t('footer.newsletterPlaceholder')}
+          className="h-10 border-white/25 bg-white/10 text-white placeholder:text-white/55 focus-visible:border-gold focus-visible:ring-gold"
+        />
+        <Button type="submit" variant="gold" size="sm">
+          {t('footer.newsletterSubmit')}
+          <ArrowUpRight className="size-3.5" aria-hidden="true" />
+        </Button>
+      </form>
+      {requestReady && (
+        <p className="mt-3 text-[0.75rem] text-white/70" role="status">
+          {t('footer.newsletterReady')}{' '}
+          <a
+            href={mailto}
+            className="font-semibold text-gold-soft underline underline-offset-4 hover:text-white"
+          >
+            {t('footer.newsletterSend')}
+          </a>
+        </p>
+      )}
     </div>
   )
 }
@@ -74,7 +135,7 @@ export function SiteFooter() {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="shell grid gap-8 py-10 md:grid-cols-3">
+        <div className="shell grid gap-8 py-10 md:grid-cols-2 xl:grid-cols-4">
           <div>
             <h2 className="text-[0.625rem] font-bold uppercase tracking-[0.18em] text-white/55">
               {t('footer.contact')}
@@ -118,6 +179,9 @@ export function SiteFooter() {
             <h2 className="text-[0.625rem] font-bold uppercase tracking-[0.18em] text-white/55">
               {t('footer.legal')}
             </h2>
+            <p className="mt-4 text-[0.75rem] leading-relaxed text-white/55">
+              {t('footer.legalNote')}
+            </p>
             <ul className="mt-4 space-y-2.5 text-[0.8125rem] text-white/65">
               <li>
                 <Link to="/about" className="transition-colors hover:text-white">
@@ -135,9 +199,22 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
-                <span className="text-white/55">
-                  {t('footer.privacy')} · {t('footer.terms')} — pending legal approved copy
-                </span>
+                <a
+                  href={`mailto:${contact.email}?subject=${encodeURIComponent('Request for CONSOL Privacy Policy')}`}
+                  aria-label={`${t('footer.privacy')} — ${t('footer.requestDocument')}`}
+                  className="transition-colors hover:text-white"
+                >
+                  {t('footer.privacy')}
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`mailto:${contact.email}?subject=${encodeURIComponent('Request for CONSOL Terms of Use')}`}
+                  aria-label={`${t('footer.terms')} — ${t('footer.requestDocument')}`}
+                  className="transition-colors hover:text-white"
+                >
+                  {t('footer.terms')}
+                </a>
               </li>
             </ul>
           </div>
@@ -159,6 +236,8 @@ export function SiteFooter() {
               <ArrowUpRight className="size-3" aria-hidden="true" />
             </a>
           </div>
+
+          <NewsletterForm />
         </div>
       </div>
 

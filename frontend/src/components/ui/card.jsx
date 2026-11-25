@@ -4,8 +4,8 @@ export function Card({ className, tone = 'paper', ...props }) {
   return (
     <div
       className={cn(
-        'relative',
-        tone === 'paper' && 'border border-line bg-paper',
+        'relative rounded-md transition-shadow duration-200',
+        tone === 'paper' && 'border border-line bg-paper shadow-card',
         tone === 'canvas' && 'bg-canvas',
         tone === 'navy' && 'bg-navy text-white',
         tone === 'bare' && 'bg-transparent',

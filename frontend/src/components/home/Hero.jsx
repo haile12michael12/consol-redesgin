@@ -65,23 +65,19 @@ export function Hero() {
           {t('home.hero.intro')}
         </motion.p>
 
-        <motion.div {...fade(0.44)} className="mt-9 flex flex-wrap items-center gap-3">
+        <motion.div {...fade(0.44)} className="mt-9 flex flex-wrap items-center gap-4">
           <Button asChild variant="gold" size="lg">
-            <Link to="/services">
+            <Link to="/services" aria-label="Explore Services">
               {t('home.hero.ctaServices')}
               <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
           </Button>
           <Button asChild variant="outline-invert" size="lg">
-            <Link to="/projects">{t('home.hero.ctaProjects')}</Link>
+            <Link to="/request-consultation">
+              {t('home.hero.ctaConsult')}
+              <ArrowUpRight className="size-4" aria-hidden="true" />
+            </Link>
           </Button>
-          <Link
-            to="/request-consultation"
-            className="group ml-1 inline-flex items-center gap-2 text-[0.75rem] font-bold uppercase tracking-[0.12em] text-white/70 transition-colors hover:text-white"
-          >
-            {t('home.hero.ctaConsult')}
-            <ArrowUpRight className="size-3.5 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-          </Link>
         </motion.div>
 
         <motion.p

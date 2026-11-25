@@ -5,9 +5,11 @@ import { cn } from '@/lib/utils'
 const links = [
   { to: '/about', labelKey: 'about.nav.overview', end: true },
   { to: '/about/vision-mission', labelKey: 'about.nav.vision' },
+  { to: '/about/core-values', labelKey: 'about.nav.values' },
   { to: '/about/leadership', labelKey: 'about.nav.leadership' },
   { to: '/about/history', labelKey: 'about.nav.history' },
   { to: '/about/structure', labelKey: 'about.nav.structure' },
+  { to: '/about/why-consol', labelKey: 'about.nav.why' },
   { to: '/about/certifications', labelKey: 'about.nav.certifications' },
   { to: '/about/clients-partners', labelKey: 'about.nav.clients' },
 ]

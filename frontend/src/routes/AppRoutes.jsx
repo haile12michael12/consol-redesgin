@@ -21,6 +21,12 @@ const HistoryPage = lazy(() =>
 const StructurePage = lazy(() =>
   import('@/pages/public/about/StructurePage').then((m) => ({ default: m.StructurePage })),
 )
+const CoreValuesPage = lazy(() =>
+  import('@/pages/public/about/CoreValuesPage').then((m) => ({ default: m.CoreValuesPage })),
+)
+const WhyChoosePage = lazy(() =>
+  import('@/pages/public/about/WhyChoosePage').then((m) => ({ default: m.WhyChoosePage })),
+)
 const CertificationsPage = lazy(() =>
   import('@/pages/public/about/CertificationsPage').then((m) => ({ default: m.CertificationsPage })),
 )
@@ -47,6 +53,18 @@ const CourseDetailPage = lazy(() =>
 )
 const RegisterCoursePage = lazy(() =>
   import('@/pages/public/RegisterCoursePage').then((m) => ({ default: m.RegisterCoursePage })),
+)
+const TrainingSchedulePage = lazy(() =>
+  import('@/pages/public/TrainingSchedulePage').then((m) => ({ default: m.TrainingSchedulePage })),
+)
+const TrainingInstructorsPage = lazy(() =>
+  import('@/pages/public/TrainingInstructorsPage').then((m) => ({ default: m.TrainingInstructorsPage })),
+)
+const RegistrationConfirmationPage = lazy(() =>
+  import('@/pages/public/RegistrationConfirmationPage').then((m) => ({ default: m.RegistrationConfirmationPage })),
+)
+const CertificateVerificationPage = lazy(() =>
+  import('@/pages/public/CertificateVerificationPage').then((m) => ({ default: m.CertificateVerificationPage })),
 )
 const NewsPage = lazy(() => import('@/pages/public/NewsPage').then((m) => ({ default: m.NewsPage })))
 const NewsDetailPage = lazy(() =>
@@ -79,6 +97,21 @@ const AdminModulePage = lazy(() =>
 const SettingsPage = lazy(() =>
   import('@/pages/admin/SettingsPage').then((m) => ({ default: m.SettingsPage })),
 )
+const ServicesAdminPage = lazy(() =>
+  import('@/pages/admin/ServicesAdminPage').then((m) => ({ default: m.ServicesAdminPage })),
+)
+const ProjectsAdminPage = lazy(() =>
+  import('@/pages/admin/ProjectsAdminPage').then((m) => ({ default: m.ProjectsAdminPage })),
+)
+const TrainingAdminPage = lazy(() =>
+  import('@/pages/admin/TrainingAdminPage').then((m) => ({ default: m.TrainingAdminPage })),
+)
+const RegistrationsAdminPage = lazy(() =>
+  import('@/pages/admin/RegistrationsAdminPage').then((m) => ({ default: m.RegistrationsAdminPage })),
+)
+const CertificatesAdminPage = lazy(() =>
+  import('@/pages/admin/CertificatesAdminPage').then((m) => ({ default: m.CertificatesAdminPage })),
+)
 
 function SuspenseBoundary({ children }) {
   return <Suspense fallback={<RouteFallback />}>{children}</Suspense>
@@ -96,6 +129,8 @@ export default function AppRoutes() {
           <Route path="leadership" element={<SuspenseBoundary><LeadershipPage /></SuspenseBoundary>} />
           <Route path="history" element={<SuspenseBoundary><HistoryPage /></SuspenseBoundary>} />
           <Route path="structure" element={<SuspenseBoundary><StructurePage /></SuspenseBoundary>} />
+          <Route path="core-values" element={<SuspenseBoundary><CoreValuesPage /></SuspenseBoundary>} />
+          <Route path="why-consol" element={<SuspenseBoundary><WhyChoosePage /></SuspenseBoundary>} />
           <Route path="certifications" element={<SuspenseBoundary><CertificationsPage /></SuspenseBoundary>} />
           <Route path="clients-partners" element={<SuspenseBoundary><ClientsPartnersPage /></SuspenseBoundary>} />
         </Route>
@@ -112,9 +147,14 @@ export default function AppRoutes() {
 
         <Route path="training">
           <Route index element={<SuspenseBoundary><TrainingPage /></SuspenseBoundary>} />
+          <Route path="schedule" element={<SuspenseBoundary><TrainingSchedulePage /></SuspenseBoundary>} />
+          <Route path="instructors" element={<SuspenseBoundary><TrainingInstructorsPage /></SuspenseBoundary>} />
+          <Route path="instructors/:slug" element={<SuspenseBoundary><TrainingInstructorsPage /></SuspenseBoundary>} />
+          <Route path="registration-confirmation/:reference" element={<SuspenseBoundary><RegistrationConfirmationPage /></SuspenseBoundary>} />
           <Route path=":slug" element={<SuspenseBoundary><CourseDetailPage /></SuspenseBoundary>} />
           <Route path=":slug/register" element={<SuspenseBoundary><RegisterCoursePage /></SuspenseBoundary>} />
         </Route>
+        <Route path="verify-certificate" element={<SuspenseBoundary><CertificateVerificationPage /></SuspenseBoundary>} />
 
         <Route path="news">
           <Route index element={<SuspenseBoundary><NewsPage /></SuspenseBoundary>} />
@@ -147,23 +187,23 @@ export default function AppRoutes() {
         />
         <Route
           path="services"
-          element={<SuspenseBoundary><AdminModulePage moduleKey="services" /></SuspenseBoundary>}
+          element={<SuspenseBoundary><ServicesAdminPage /></SuspenseBoundary>}
         />
         <Route
           path="projects"
-          element={<SuspenseBoundary><AdminModulePage moduleKey="projects" /></SuspenseBoundary>}
+          element={<SuspenseBoundary><ProjectsAdminPage /></SuspenseBoundary>}
         />
         <Route
           path="training"
-          element={<SuspenseBoundary><AdminModulePage moduleKey="training" /></SuspenseBoundary>}
+          element={<SuspenseBoundary><TrainingAdminPage /></SuspenseBoundary>}
         />
         <Route
           path="registrations"
-          element={<SuspenseBoundary><AdminModulePage moduleKey="registrations" /></SuspenseBoundary>}
+          element={<SuspenseBoundary><RegistrationsAdminPage /></SuspenseBoundary>}
         />
         <Route
           path="certificates"
-          element={<SuspenseBoundary><AdminModulePage moduleKey="certificates" /></SuspenseBoundary>}
+          element={<SuspenseBoundary><CertificatesAdminPage /></SuspenseBoundary>}
         />
         <Route
           path="news"

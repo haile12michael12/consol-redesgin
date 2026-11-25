@@ -7,6 +7,59 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## CONSOL services API
+
+The public services catalogue reads only published records from `/api/services`
+and `/api/services/{slug}`. Seed the four currently published CONSOL categories
+from the approved catalogue after applying migrations:
+
+```bash
+php artisan migrate
+php artisan db:seed
+```
+
+Services are edited from `/admin/services`. Staff must sign in through
+`/api/auth/login` with an administrator account. Admin access is determined by
+the `users.is_admin` flag; new users are not administrators by default. Grant
+that flag only to approved staff through the organisation's controlled account
+provisioning process. The admin API supports listing, creating, updating
+(including draft/published status), and deleting services. Draft records are
+never returned by the public endpoints.
+
+The API persists service summary, description, scope, optional benefits,
+delivery approach, verified project references, FAQs, imagery and publication
+status. Optional information remains empty until supplied and approved by
+CONSOL.
+
+## CONSOL projects API
+
+The public portfolio reads only published projects from `/api/projects`,
+`/api/projects/categories`, and `/api/projects/{slug}`. Listing requests support
+`q`, `category`, `year`, `featured`, `page`, and `per_page` filters and return a
+Laravel paginator. Apply migrations and seed the existing published project
+records and their categories with:
+
+```bash
+php artisan migrate
+php artisan db:seed
+```
+
+Projects are managed at `/admin/projects` by signed-in administrators. The
+admin API supports project and category CRUD, publication and featured flags,
+SEO fields, and multiple gallery uploads. New image uploads are validated as
+JPEG, PNG, or WebP (10 MB each, at most 12 images), stored on Laravel's private
+local disk, and served through an access-checked image endpoint. Draft project
+images are available only to administrators. Do not expose the private disk
+with a public storage symlink. Configure PHP/web-server request limits to allow
+the largest supported upload and combined multi-image request.
+
+The project seeder contains only engagements already listed as published
+CONSOL work. Client and location details are exposed only when their approval
+flags are set; project-specific photos, durations, and outcomes remain empty
+until verified information is supplied. Grant `users.is_admin` only to
+approved staff through the organisation's controlled account provisioning
+process.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

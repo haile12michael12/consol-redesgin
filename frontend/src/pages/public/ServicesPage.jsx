@@ -4,13 +4,13 @@ import { Link } from 'react-router-dom'
 import { PageHero } from '@/components/common/PageHero'
 import { SectionHeading } from '@/components/common/SectionHeading'
 import { SearchField } from '@/components/common/SearchField'
-import { EmptyState } from '@/components/common/StateBlocks'
+import { CardGridSkeleton, EmptyState, ErrorState } from '@/components/common/StateBlocks'
 import { ServiceCard } from '@/components/services/ServiceCard'
 import { Button } from '@/components/ui/button'
 import { FilterPill } from '@/components/ui/tag'
 import { useT } from '@/i18n/LanguageProvider'
 import { usePageMeta } from '@/lib/seo'
-import { useServices } from '@/data/services'
+import { useServices } from '@/hooks/useServices'
 
 const filters = [
   { id: 'all', labelKey: 'common.all' },
@@ -22,7 +22,8 @@ const filters = [
 
 export function ServicesPage() {
   const t = useT()
-  const services = useServices()
+  const { data: rawServices, isPending, source, error, refetch } = useServices()
+  const services = useMemo(() => rawServices ?? [], [rawServices])
   const [category, setCategory] = useState('all')
   const [query, setQuery] = useState('')
 
@@ -37,7 +38,7 @@ export function ServicesPage() {
     const term = query.trim().toLowerCase()
     return services.filter((service) => {
       const matchesCategory = category === 'all' || service.category === category
-      const haystack = [service.title, service.summary, ...service.scope].join(' ').toLowerCase()
+      const haystack = [service.title, service.summary, ...(service.scope ?? [])].join(' ').toLowerCase()
       return matchesCategory && (!term || haystack.includes(term))
     })
   }, [services, category, query])
@@ -90,10 +91,18 @@ export function ServicesPage() {
           </div>
 
           <p className="mt-5 text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-muted" aria-live="polite">
-            {filtered.length} {t('common.results')}
+            {!isPending && source !== 'error' && `${filtered.length} ${t('common.results')}`}
           </p>
 
-          {filtered.length === 0 ? (
+            {isPending ? (
+              <div className="mt-8"><CardGridSkeleton count={4} /></div>
+            ) : source === 'error' ? (
+              <ErrorState
+                className="mt-8"
+                text={error?.message ?? t('common.errorText')}
+                onRetry={refetch}
+              />
+            ) : filtered.length === 0 ? (
             <EmptyState
               className="mt-8"
               action={

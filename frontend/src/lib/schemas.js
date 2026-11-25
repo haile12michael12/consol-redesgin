@@ -45,14 +45,13 @@ export const consultationSchema = z.object({
 })
 
 export const registrationSchema = z.object({
-  name,
+  full_name: name,
   email,
   phone,
-  organisation: z.string().trim().max(160, { message: 'form.tooLong' }).optional().or(z.literal('')),
-  role: z.string().trim().max(120).optional().or(z.literal('')),
-  city: z.string().trim().max(80).optional().or(z.literal('')),
-  cohort: z.string().trim().max(80).optional().or(z.literal('')),
-  notes: z.string().trim().max(1000, { message: 'form.tooLong' }).optional().or(z.literal('')),
+  organization: z.string().trim().max(255, { message: 'form.tooLong' }).optional().or(z.literal('')),
+  course_schedule_id: z.string().optional().or(z.literal('')),
+  preferred_schedule: z.string().trim().max(255, { message: 'form.tooLong' }).optional().or(z.literal('')),
+  additional_information: z.string().trim().max(3000, { message: 'form.tooLong' }).optional().or(z.literal('')),
   consent: z.literal(true, { message: 'contact.form.consentError' }),
 })
 

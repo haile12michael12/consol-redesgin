@@ -5,12 +5,13 @@ import { useQuery } from '@tanstack/react-query'
  * `source === 'demo'` means the API was unavailable and labelled demo data is
  * being displayed; `source === 'error'` means no data could be shown.
  */
-export function useApiQuery({ queryKey, queryFn, fallbackData, staleTime = 5 * 60 * 1000 }) {
+export function useApiQuery({ queryKey, queryFn, fallbackData, staleTime = 5 * 60 * 1000, enabled = true }) {
   const query = useQuery({
     queryKey,
     queryFn,
     placeholderData: fallbackData,
     staleTime,
+    enabled,
     retry: 1,
   })
 

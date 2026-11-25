@@ -41,7 +41,6 @@ export const services = [
       'contractor-performance-evaluation-information-system',
       'ethiopian-construction-project-management-manuals',
     ],
-    relatedCourseIds: ['project-management-fundamentals', 'primavera-planning-scheduling', 'bim-revit-architecture'],
   },
   {
     slug: 'business-management-consultancy',
@@ -78,7 +77,6 @@ export const services = [
       'business-process-reengineering-balanced-scorecard',
       'defence-enterprises-organisational-structure',
     ],
-    relatedCourseIds: ['construction-project-management', 'contract-administration'],
   },
   {
     slug: 'professional-training',
@@ -113,7 +111,6 @@ export const services = [
       'pmi-pmp-master-framework-agreement',
       'professional-competence-assessment-certification-system',
     ],
-    relatedCourseIds: ['pmp-certification-preparation', 'revit-architecture-bim', 'etabs-structural-analysis'],
   },
   {
     slug: 'research-industry-development',
@@ -147,7 +144,6 @@ export const services = [
       'capacity-gap-assessment-cicbf',
       'professional-competence-assessment-certification-system',
     ],
-    relatedCourseIds: ['construction-project-management', 'research-methods-demo'],
   },
 ]
 

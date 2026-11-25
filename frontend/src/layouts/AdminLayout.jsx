@@ -20,13 +20,17 @@ import {
   X,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Logo } from '@/components/common/Logo'
+import { ErrorState, LoadingState } from '@/components/common/StateBlocks'
 import { Button } from '@/components/ui/button'
 import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
 import { useT } from '@/i18n/LanguageProvider'
 import { adminNav } from '@/lib/navigation'
 import { cn } from '@/lib/utils'
+import { me, logout } from '@/services/authApi'
+import { normaliseError } from '@/services/api'
 
 const icons = {
   LayoutDashboard,
@@ -78,9 +82,6 @@ function Sidebar({ onNavigate }) {
         <span className="text-[0.5625rem] font-bold uppercase tracking-[0.16em] text-white/60">
           {t('admin.title')}
         </span>
-        <span className="border border-gold/50 bg-gold/10 px-1.5 py-0.5 text-[0.5rem] font-bold uppercase tracking-[0.12em] text-gold">
-          Demo
-        </span>
       </div>
       <nav aria-label={t('admin.title')} className="flex-1 overflow-y-auto py-3">
         <ul className="space-y-0.5">
@@ -107,12 +108,43 @@ function Sidebar({ onNavigate }) {
 export function AdminLayout() {
   const t = useT()
   const location = useLocation()
+  const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const auth = useQuery({
+    queryKey: ['auth', 'me'],
+    queryFn: async () => (await me()).data.user,
+    retry: false,
+  })
+  const signOut = useMutation({
+    mutationFn: logout,
+    onSuccess: () => {
+      queryClient.removeQueries({ queryKey: ['auth', 'me'] })
+      navigate('/admin/login', { replace: true })
+    },
+  })
 
   const pageTitle = useMemo(() => {
     const match = adminNav.find((item) => location.pathname.startsWith(item.to))
     return match ? t(match.labelKey) : t('admin.nav.dashboard')
   }, [location.pathname, t])
+
+  if (auth.isPending) return <LoadingState className="shell section" label="Checking administrator access…" />
+  if (auth.isError) {
+    if (auth.error?.response?.status === 401 || auth.error?.response?.status === 403) {
+      return <Navigate to="/admin/login" replace state={{ from: location }} />
+    }
+    return (
+      <div className="shell section">
+        <ErrorState
+          title="Administrator access could not be verified"
+          text={normaliseError(auth.error).message}
+          onRetry={() => auth.refetch()}
+        />
+      </div>
+    )
+  }
+  if (!auth.data?.is_admin) return <Navigate to="/admin/login" replace state={{ from: location }} />
 
   return (
     <div className="min-h-screen bg-[#f6f7f9]">
@@ -181,22 +213,30 @@ export function AdminLayout() {
               </button>
               <div className="hidden items-center gap-2.5 border-l border-line pl-3 sm:flex">
                 <span className="grid size-8 place-items-center rounded-full bg-navy text-[0.625rem] font-bold text-gold">
-                  AD
+                  {(auth.data.name ?? 'A').slice(0, 2).toUpperCase()}
                 </span>
                 <div className="leading-tight">
-                  <p className="text-[0.75rem] font-semibold text-navy">Administrator</p>
-                  <p className="text-[0.625rem] text-muted">Demo account</p>
+                  <p className="text-[0.75rem] font-semibold text-navy">{auth.data.name}</p>
+                  <p className="text-[0.625rem] text-muted">{auth.data.email}</p>
                 </div>
               </div>
-              <Button asChild variant="ghost" size="sm" className="hidden xl:inline-flex">
-                <Link to="/admin/login">{t('admin.signOut')}</Link>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="inline-flex"
+                disabled={signOut.isPending}
+                onClick={() => signOut.mutate()}
+              >
+                {signOut.isPending ? 'Signing out…' : t('admin.signOut')}
               </Button>
             </div>
           </div>
-          <div className="flex items-center gap-2 border-t border-gold/30 bg-gold/10 px-4 py-1.5 text-[0.625rem] font-semibold uppercase tracking-[0.1em] text-gold-deep sm:px-6">
-            <span className="inline-block size-1.5 rounded-full bg-gold" aria-hidden="true" />
-            {t('admin.demoBanner')}
-          </div>
+          {signOut.isError && (
+            <p role="alert" className="border-t border-danger/30 bg-danger/5 px-4 py-2 text-xs text-danger">
+              Sign out failed. Please retry.
+            </p>
+          )}
         </header>
 
         <main className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">

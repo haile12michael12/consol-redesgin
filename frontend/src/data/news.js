@@ -66,7 +66,7 @@ export const news = [
     body: [
       'CONSOL delivered PMI® PMP® training for the Ministry of Innovation & Technology as part of its ongoing certification training programme.',
     ],
-    cta: { label: 'View PMP® preparation course', to: '/training?category=pmi-certification' },
+    cta: { label: 'View current training information', to: '/training' },
   },
   {
     slug: 'value-for-money-assessment-kickoff',

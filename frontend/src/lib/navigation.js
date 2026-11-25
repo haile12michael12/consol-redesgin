@@ -93,28 +93,21 @@ export const primaryNav = [
       {
         headingKey: 'nav.courseAreas',
         links: [
-          { labelKey: 'training.cat.construction', to: '/training?category=construction-management' },
-          {
-            labelKey: 'training.cat.software',
-            to: '/training?category=construction-management-software',
-          },
-          {
-            labelKey: 'training.cat.engineering',
-            to: '/training?category=engineering-software',
-          },
+          { labelKey: 'nav.training', to: '/training' },
+          { labelKey: 'nav.trainingCalendar', to: '/training/schedule' },
+          { labelKey: 'nav.trainingInstructors', to: '/training/instructors' },
         ],
       },
       {
         headingKey: 'nav.certification',
         links: [
-          { labelKey: 'training.cat.pmi', to: '/training?category=pmi-certification' },
-          { labelKey: 'training.cat.autodesk', to: '/training?category=autodesk-certification' },
-          { labelKey: 'nav.trainingCalendar', to: '/training#calendar' },
+          { labelKey: 'nav.verifyCertificate', to: '/verify-certificate' },
+          { labelKey: 'nav.contact', to: '/contact' },
         ],
       },
     ],
     feature: {
-      labelKey: 'nav.trainingFeature',
+      labelKey: 'nav.training',
       titleKey: 'training.featureTitle',
       textKey: 'nav.trainingFeatureText',
       to: '/training',
@@ -167,6 +160,8 @@ export const footerNav = {
   ],
   knowledge: [
     { labelKey: 'nav.training', to: '/training' },
+    { labelKey: 'nav.trainingCalendar', to: '/training/schedule' },
+    { labelKey: 'nav.verifyCertificate', to: '/verify-certificate' },
     { labelKey: 'nav.newsInsights', to: '/news' },
     { labelKey: 'nav.events', to: '/events' },
     { labelKey: 'nav.downloads', to: '/news#resources' },

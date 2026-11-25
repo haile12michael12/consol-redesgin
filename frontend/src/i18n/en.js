@@ -48,6 +48,7 @@ const en = {
   'common.send': 'Send message',
   'common.sending': 'Sending…',
   'common.backToTop': 'Back to top',
+  'common.whatsapp': 'Contact CONSOL on WhatsApp',
   'common.language': 'Language',
   'common.skipToContent': 'Skip to content',
   'common.lightbox': 'Image viewer',
@@ -83,8 +84,10 @@ const en = {
   'nav.courseAreas': 'Course areas',
   'nav.certification': 'Certification',
   'nav.trainingCalendar': 'Training calendar',
-  'nav.trainingFeature': 'Authorized training',
-  'nav.trainingFeatureText': 'PMI® ATP and Autodesk® ATC accredited programmes, plus Pearson VUE test centre access.',
+  'nav.trainingInstructors': 'Instructors',
+  'nav.verifyCertificate': 'Verify a certificate',
+  'nav.trainingFeature': 'Training',
+  'nav.trainingFeatureText': 'Explore published courses, confirmed schedules and instructor profiles.',
   'nav.news': 'News & insights',
   'nav.insights': 'Insights',
   'nav.newsInsights': 'News & insights',
@@ -111,25 +114,73 @@ const en = {
   'footer.rights': 'All rights reserved.',
   'footer.aboutText': 'A consulting, training and research institute focused on improving the efficiency and effectiveness of organisations in the construction industry.',
   'footer.legal': 'Legal notice',
-  'footer.privacy': 'Privacy',
-  'footer.terms': 'Terms',
+  'footer.privacy': 'Privacy Policy',
+  'footer.terms': 'Terms of Use',
   'footer.established': 'Established 2005 · Addis Ababa, Ethiopia',
+  'footer.legalNote': 'Request current approved policy documents from CONSOL by email.',
+  'footer.requestDocument': 'request a copy by email',
+  'footer.newsletter': 'Industry updates',
+  'footer.newsletterText':
+    'Request email updates from CONSOL. Use your email app to send the request; this website does not send or store subscriptions.',
+  'footer.newsletterPlaceholder': 'Your email address',
+  'footer.newsletterSubmit': 'Prepare request',
+  'footer.newsletterReady': 'Your request is ready.',
+  'footer.newsletterSend': 'Open email to send',
 
-  'home.hero.eyebrow': 'Construction Solutions PLC · Since 2005',
-  'home.hero.title1': 'Building expertise.',
-  'home.hero.title2': 'Strengthening organisations.',
-  'home.hero.title3': 'Advancing the construction industry.',
+  'home.hero.eyebrow': 'Construction Solutions PLC · Established 2005',
+  'home.hero.title1': 'Building Expertise.',
+  'home.hero.title2': 'Strengthening Organizations.',
+  'home.hero.title3': 'Advancing the Construction Industry.',
   'home.hero.intro':
-    'CONSOL is an Ethiopian consulting, training and research institute. We help construction companies, public institutions and professionals raise their performance through practical consultancy, accredited training and applied research.',
-  'home.hero.ctaServices': 'Explore services',
-  'home.hero.ctaProjects': 'View projects',
-  'home.hero.ctaConsult': 'Request a consultation',
+    'Construction Solutions PLC (CONSOL) is an Ethiopian consulting, training, and research institute. We provide specialized consulting, accredited professional training, and applied research solutions to strengthen organizations and elevate the construction sector.',
+  'home.hero.ctaServices': 'Explore Our Services',
+  'home.hero.ctaProjects': 'View Projects',
+  'home.hero.ctaConsult': 'Request Consultation',
   'home.hero.scroll': 'Discover CONSOL',
   'home.hero.stat1': 'Established',
   'home.hero.statClients': 'Organisations served',
   'home.hero.statTrained': 'Training participants',
   'home.hero.stat2': 'Credential programmes',
   'home.hero.stat3': 'Based in Addis Ababa',
+
+  'home.aboutPreview.eyebrow': 'About CONSOL',
+  'home.aboutPreview.title': 'Two decades of institutional leadership in the Horn of Africa.',
+  'home.aboutPreview.lead':
+    'Since 2005 G.C., CONSOL has operated as a premier knowledge and capability hub for construction and business management.',
+  'home.aboutPreview.card1.title': 'Multi-Disciplinary Expertise',
+  'home.aboutPreview.card1.text':
+    'Over 200 senior academics and practicing specialists (BSc to PhD with a minimum of 15 years experience) participate in our consulting and training curricula.',
+  'home.aboutPreview.card2.title': 'International Frameworks',
+  'home.aboutPreview.card2.text':
+    'PMI® PMBOK®, OPM3, and Autodesk® BIM workflows customized specifically for the operational reality of the Ethiopian construction sector.',
+  'home.aboutPreview.card3.title': 'Sustainable Capability Transfer',
+  'home.aboutPreview.card3.text':
+    'We focus on embedding resilient systems, performance structures, and certified talent within client organizations, creating lasting institutional value.',
+  'home.aboutPreview.card4.title': 'Verified Institutional Track Record',
+  'home.aboutPreview.card4.text':
+    'Trusted by federal ministries, infrastructure authorities, financial institutions, telecom operators, and major contractors nationwide.',
+  'home.aboutPreview.cta': 'Learn More About CONSOL',
+
+  'home.testimonials.eyebrow': 'Institutional Trust & Endorsements',
+  'home.testimonials.title': 'Verified credentials and published client engagements.',
+  'home.testimonials.lead':
+    'In adherence to CONSOL’s corporate ethics, endorsements and project outcomes are published strictly based on verified engagements and authorized institutional relationships.',
+  'home.testimonials.policy':
+    'Client testimonials and performance quotes are published only upon formal written authorization. Reference portfolios are available upon verified request.',
+  'home.testimonials.cta': 'Request Reference Portfolio',
+
+  'home.newsletter.eyebrow': 'Knowledge & Updates',
+  'home.newsletter.title': 'Stay informed on industry standards and training schedules.',
+  'home.newsletter.lead':
+    'Subscribe to receive executive briefings, research publications, and training schedule updates from CONSOL.',
+  'home.newsletter.emailPlaceholder': 'Enter your business email address',
+  'home.newsletter.subscribe': 'Subscribe to Updates',
+  'home.newsletter.subscribing': 'Subscribing…',
+  'home.newsletter.success': 'Thank you for subscribing. You will receive CONSOL updates.',
+  'home.newsletter.privacy': 'We respect your privacy. No spam. You may unsubscribe at any time.',
+  'home.newsletter.interestTraining': 'Training & Certification Schedules',
+  'home.newsletter.interestConsulting': 'Management Consultancy & PMO Insights',
+  'home.newsletter.interestResearch': 'Industry Research & Sector Reports',
 
   'home.intro.eyebrow': 'The company',
   'home.intro.title': 'Expertise built on real projects, not theory.',
@@ -163,9 +214,9 @@ const en = {
   'home.projects.note': 'Client and scope details are taken from engagements published by CONSOL. Photographs are illustrative.',
 
   'home.training.eyebrow': 'Professional training',
-  'home.training.title': 'Accredited training for the construction professional.',
+  'home.training.title': 'Professional development for construction and industry teams.',
   'home.training.text':
-    'CONSOL delivers PMI® certification preparation, Autodesk® BIM and design software courses, construction management programmes and engineering software training — for individuals and for organisations.',
+    'Explore the courses, schedules and instructor profiles currently published by CONSOL. Course details are added as they are confirmed.',
   'home.training.cta': 'Browse the training catalogue',
   'home.training.calendar': 'Training calendar',
 
@@ -180,9 +231,9 @@ const en = {
   'home.why.3.title': 'In-depth experience',
   'home.why.3.text':
     'Our team combines technical and management skills and provides a client-centric solution throughout the consulting engagement.',
-  'home.why.4.title': 'Accredited delivery',
+  'home.why.4.title': 'Professional delivery',
   'home.why.4.text':
-    'PMI®, Autodesk® and Pearson VUE authorisations mean certification training and testing are delivered to international standards.',
+    'Our consulting, training and research work is shaped around each client’s needs and approved scope.',
 
   'home.clients.eyebrow': 'Clients & partners',
   'home.clients.title': 'Organisations we have worked with.',
@@ -224,9 +275,11 @@ const en = {
   'about.contact.cta': 'Speak with CONSOL',
   'about.nav.overview': 'Overview',
   'about.nav.vision': 'Vision & mission',
+  'about.nav.values': 'Core values',
   'about.nav.leadership': 'Leadership',
   'about.nav.history': 'History',
   'about.nav.structure': 'Structure',
+  'about.nav.why': 'Why CONSOL',
   'about.nav.certifications': 'Certifications',
   'about.nav.clients': 'Clients & partners',
 
@@ -341,9 +394,9 @@ const en = {
   'projects.count': 'projects',
 
   'training.hero.eyebrow': 'Professional training',
-  'training.hero.title': 'Training that meets industry standards.',
+  'training.hero.title': 'Professional training and development.',
   'training.hero.text':
-    'Construction management, construction management software, engineering software and internationally accredited certification programmes — delivered for individuals and in-company.',
+    'Browse courses and confirmed schedules published by CONSOL.',
   'training.hero.cta': 'View the catalogue',
   'training.cat.construction': 'Construction management',
   'training.cat.software': 'Construction management software',
@@ -385,7 +438,7 @@ const en = {
   'training.count': 'courses',
   'training.notice':
     'Course durations and certification bodies are as published by CONSOL. Session dates, fees and instructors are confirmed on registration and are not displayed until approved.',
-  'training.featureTitle': 'Accredited training partner',
+  'training.featureTitle': 'Course information',
   'training.register.title': 'Course registration',
   'training.register.subtitle': 'Register interest and CONSOL will confirm the next intake, venue and fee.',
   'training.register.success': 'Registration interest received',

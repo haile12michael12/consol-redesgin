@@ -12,6 +12,7 @@ import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
 import { usePageMeta } from '@/lib/seo'
 import { loginSchema } from '@/lib/schemas'
 import { Button } from '@/components/ui/button'
+import { getCsrfCookie, login } from '@/services/authApi'
 
 export function AdminLoginPage() {
   const { t } = useLanguage()
@@ -33,13 +34,15 @@ export function AdminLoginPage() {
    * Demo sign-in: no credentials leave the browser. When Laravel Sanctum is
    * connected this handler calls getCsrfCookie() then login() from authApi.
    */
-  const onSubmit = async () => {
+  const onSubmit = async (credentials) => {
     setStatus('pending')
-    await new Promise((resolve) => {
-      window.setTimeout(resolve, 600)
-    })
-    setStatus('idle')
-    navigate('/admin/dashboard')
+    try {
+      await getCsrfCookie()
+      await login(credentials)
+      navigate('/admin/dashboard')
+    } catch (error) {
+      setStatus(error?.response?.data?.message ?? 'Sign in failed. Check your credentials and administrator access.')
+    }
   }
 
   return (
@@ -61,8 +64,7 @@ export function AdminLoginPage() {
               Manage the website, programmes and inbound enquiries.
             </h1>
             <p className="mt-5 max-w-sm text-[0.875rem] leading-relaxed text-white/55">
-              Administrator access is restricted to authorised CONSOL staff. Authentication is provided by Laravel
-              Sanctum session cookies.
+              Administrator access is restricted to authorised CONSOL staff through Laravel session authentication.
             </p>
           </div>
           <p className="text-[0.625rem] font-semibold uppercase tracking-[0.14em] text-white/55">
@@ -92,8 +94,15 @@ export function AdminLoginPage() {
 
             <div className="mt-6 flex items-start gap-2.5 border border-gold/50 bg-gold/10 px-3.5 py-3">
               <AlertCircle className="mt-0.5 size-3.5 shrink-0 text-gold-deep" aria-hidden="true" />
-              <p className="text-[0.6875rem] leading-relaxed text-navy">{t('admin.login.demo')}</p>
+              <p className="text-[0.6875rem] leading-relaxed text-navy">
+                Use your authorised CONSOL administrator account. Demo credentials are not accepted.
+              </p>
             </div>
+            {status !== 'idle' && status !== 'pending' && (
+              <p role="alert" className="mt-4 border border-danger/30 bg-danger/5 px-3.5 py-3 text-[0.75rem] text-ink">
+                {status}
+              </p>
+            )}
 
             <form onSubmit={handleSubmit(onSubmit)} noValidate className="mt-6 space-y-4">
               <FormField

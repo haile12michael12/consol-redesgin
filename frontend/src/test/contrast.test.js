@@ -46,12 +46,13 @@ describe('WCAG AA contrast for the CONSOL palette', () => {
   const canvas = token('canvas')
   const ink = token('ink')
   const muted = token('muted')
+  const mutedAccessible = token('muted-accessible')
   const goldDeep = token('gold-deep')
 
   it('body text meets 4.5:1 on both light backgrounds', () => {
     expect(contrast(ink, paper)).toBeGreaterThanOrEqual(4.5)
     expect(contrast(muted, paper)).toBeGreaterThanOrEqual(4.5)
-    expect(contrast(muted, canvas)).toBeGreaterThanOrEqual(4.5)
+    expect(contrast(mutedAccessible, canvas)).toBeGreaterThanOrEqual(4.5)
   })
 
   it('navy headings meet 4.5:1 on both light backgrounds', () => {

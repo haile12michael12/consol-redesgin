@@ -1,42 +1,38 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { FormField, FormGrid } from './FormField'
-import { FormError, FormSuccess } from './FormFeedback'
+import { FormError } from './FormFeedback'
 import { SubmitButton } from './SubmitButton'
 import { useT } from '@/i18n/LanguageProvider'
 import { registrationSchema } from '@/lib/schemas'
-import { contact } from '@/lib/site'
+import { normaliseError } from '@/services/api'
 import { submitRegistration } from '@/services/coursesApi'
+import { Field } from '@/components/ui/field'
 
-/**
- * Course registration interest.
- * Posts to POST /api/registrations when Laravel is connected. In demo mode the
- * workflow completes locally and says so explicitly.
- */
 export function RegistrationForm({ course }) {
   const t = useT()
+  const navigate = useNavigate()
   const [status, setStatus] = useState('idle')
-  const [source, setSource] = useState(null)
   const [serverError, setServerError] = useState(null)
+  const schedules = course.schedules?.filter((schedule) => schedule.registrationOpen) ?? []
 
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(registrationSchema),
     defaultValues: {
-      name: '',
+      full_name: '',
       email: '',
       phone: '',
-      organisation: '',
-      role: '',
-      city: '',
-      cohort: '',
-      notes: '',
+      organization: '',
+      course_schedule_id: '',
+      preferred_schedule: '',
+      additional_information: '',
       consent: false,
     },
   })
@@ -45,42 +41,23 @@ export function RegistrationForm({ course }) {
     setStatus('pending')
     setServerError(null)
     try {
-      await submitRegistration({ ...values, course_id: course.id, course_title: course.title })
-      setSource('api')
-      setStatus('success')
-      reset()
-    } catch {
-      const demo = import.meta.env.VITE_ENABLE_DEMO_DATA === 'true'
-      if (demo) {
-        await new Promise((resolve) => {
-          window.setTimeout(resolve, 650)
-        })
-        setSource('demo')
-        setStatus('success')
-        reset()
-      } else {
-        setServerError(true)
-        setStatus('error')
-      }
+      const registration = await submitRegistration({
+        ...values,
+        course_id: course.id,
+        course_schedule_id: values.course_schedule_id ? Number(values.course_schedule_id) : null,
+      })
+      navigate(`/training/registration-confirmation/${registration.reference}`, { replace: true })
+    } catch (error) {
+      const normalised = normaliseError(error)
+      const validationMessage = Object.values(normalised.errors ?? {}).flat()[0]
+      setServerError(validationMessage || normalised.message)
+      setStatus('error')
     }
-  }
-
-  if (status === 'success') {
-    return (
-      <FormSuccess
-        title={t('training.register.success')}
-        text={t('training.register.successText')}
-        source={source}
-        onReset={() => setStatus('idle')}
-      />
-    )
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
-      {serverError && (
-        <FormError title={t('common.error')} text={t('common.errorText')} email={contact.email} />
-      )}
+      {serverError && <FormError title={t('common.error')} text={serverError} />}
 
       <FormGrid>
         <FormField
@@ -88,8 +65,8 @@ export function RegistrationForm({ course }) {
           label={t('common.name')}
           required
           autoComplete="name"
-          register={register('name')}
-          error={errors.name ? t(errors.name.message) : undefined}
+          register={register('full_name')}
+          error={errors.full_name ? t(errors.full_name.message) : undefined}
         />
         <FormField
           id="reg-email"
@@ -111,38 +88,51 @@ export function RegistrationForm({ course }) {
           error={errors.phone ? t(errors.phone.message) : undefined}
         />
         <FormField
-          id="reg-organisation"
+          id="reg-organization"
           label={t('common.organisation')}
           hint={t('common.optional')}
           autoComplete="organization"
-          register={register('organisation')}
-          error={errors.organisation ? t(errors.organisation.message) : undefined}
-        />
-        <FormField
-          id="reg-role"
-          label="Job title"
-          hint={t('common.optional')}
-          register={register('role')}
-          error={errors.role ? t(errors.role.message) : undefined}
-        />
-        <FormField
-          id="reg-city"
-          label="City"
-          hint={t('common.optional')}
-          register={register('city')}
-          error={errors.city ? t(errors.city.message) : undefined}
+          register={register('organization')}
+          error={errors.organization ? t(errors.organization.message) : undefined}
         />
       </FormGrid>
 
+      {schedules.length > 0 && (
+        <Field label="Preferred confirmed schedule" htmlFor="reg-schedule" error={errors.course_schedule_id?.message}>
+          {(aria) => (
+            <select
+              id="reg-schedule"
+              className="h-11 w-full rounded-sm border border-input bg-white px-3.5 text-sm text-ink outline-none focus-visible:border-gold focus-visible:ring-2 focus-visible:ring-gold/25 aria-[invalid=true]:border-danger"
+              {...aria}
+              {...register('course_schedule_id')}
+            >
+              <option value="">Choose an available schedule</option>
+              {schedules.map((schedule) => (
+                <option key={schedule.id} value={schedule.id}>
+                  {schedule.label} — {new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(schedule.startsAt))}
+                </option>
+              ))}
+            </select>
+          )}
+        </Field>
+      )}
+
+      <FormField
+        id="reg-preferred-schedule"
+        label={schedules.length ? 'Other timing preferences' : 'Preferred schedule'}
+        hint={t('common.optional')}
+        register={register('preferred_schedule')}
+        error={errors.preferred_schedule ? t(errors.preferred_schedule.message) : undefined}
+      />
+
       <FormField
         id="reg-notes"
-        label="Anything we should know"
+        label="Additional information"
         hint={t('common.optional')}
         textarea
         rows={3}
-        placeholder="Preferred timing, in-company delivery, group booking…"
-        register={register('notes')}
-        error={errors.notes ? t(errors.notes.message) : undefined}
+        register={register('additional_information')}
+        error={errors.additional_information ? t(errors.additional_information.message) : undefined}
       />
 
       <div className="border border-line bg-canvas/60 px-4 py-3">
@@ -175,8 +165,7 @@ export function RegistrationForm({ course }) {
       </SubmitButton>
 
       <p className="text-[0.6875rem] leading-relaxed text-muted">
-        This is a registration <strong className="font-semibold text-navy">interest</strong>, not a confirmed place.
-        CONSOL confirms the next intake, venue and fee directly. No fee is charged through this website.
+        Submitting a registration is a request, not a confirmed place. CONSOL will review it and contact you about the next steps.
       </p>
     </form>
   )

@@ -1,17 +1,18 @@
-import { ArrowLeft, Check, Clock, GraduationCap } from 'lucide-react'
+import { ArrowLeft, GraduationCap } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { Breadcrumbs } from '@/components/common/Breadcrumbs'
-import { NotFoundInline } from '@/components/common/StateBlocks'
+import { EmptyState, ErrorState, LoadingState, NotFoundInline } from '@/components/common/StateBlocks'
 import { RegistrationForm } from '@/components/forms/RegistrationForm'
-import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { useT } from '@/i18n/LanguageProvider'
 import { usePageMeta } from '@/lib/seo'
-import { getCourseById, getDurationLabel } from '@/data/courses'
+import { useCourse } from '@/hooks/useCourses'
 
 export function RegisterCoursePage() {
   const { slug } = useParams()
   const t = useT()
-  const course = getCourseById(slug)
+  const courseQuery = useCourse(slug)
+  const course = courseQuery.data
 
   usePageMeta({
     title: course ? `Register — ${course.title}` : 'Course registration',
@@ -19,6 +20,11 @@ export function RegisterCoursePage() {
     noindex: true,
   })
 
+  if (courseQuery.isPending) return <LoadingState className="shell section" />
+  if (courseQuery.isError) {
+    if (courseQuery.error?.response?.status === 404) return <NotFoundInline />
+    return <div className="shell section"><ErrorState onRetry={courseQuery.refetch} /></div>
+  }
   if (!course) return <NotFoundInline />
 
   return (
@@ -28,8 +34,8 @@ export function RegisterCoursePage() {
           <Breadcrumbs
             items={[
               { label: t('nav.training'), to: '/training' },
-              { label: course.title, to: `/training/${course.id}` },
-              { label: t('training.register.title'), to: `/training/${course.id}/register` },
+              { label: course.title, to: `/training/${course.slug}` },
+              { label: t('training.register.title'), to: `/training/${course.slug}/register` },
             ]}
             invert
             className="mb-8"
@@ -48,42 +54,16 @@ export function RegisterCoursePage() {
         <div className="shell grid gap-12 lg:grid-cols-[1fr_1.4fr] lg:gap-16">
           <aside>
             <div className="border border-line">
-              <div className="aspect-[16/10] overflow-hidden">
-                <img src={course.image} alt="" className="h-full w-full object-cover" loading="lazy" />
+              <div className="grid aspect-[16/10] place-items-center bg-canvas text-navy/30">
+                {course.image
+                  ? <img src={course.image} alt={course.imageAlt || ''} className="h-full w-full object-cover" loading="lazy" />
+                  : <GraduationCap className="size-12" aria-hidden="true" />}
               </div>
               <div className="p-6">
-                {course.certificationBody && (
-                  <Badge variant="gold">{course.certificationBody}</Badge>
-                )}
-                <h2 className="mt-3 text-[1.125rem] font-semibold leading-snug text-navy">{course.title}</h2>
-                <dl className="mt-5 space-y-2.5 border-t border-line pt-4 text-[0.8125rem]">
-                  <div className="flex items-center justify-between">
-                    <dt className="flex items-center gap-2 text-muted">
-                      <Clock className="size-3.5 text-gold-deep" aria-hidden="true" />
-                      {t('training.duration')}
-                    </dt>
-                    <dd className="font-semibold text-navy">{getDurationLabel(course)}</dd>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <dt className="flex items-center gap-2 text-muted">
-                      <GraduationCap className="size-3.5 text-gold-deep" aria-hidden="true" />
-                      {t('training.fee')}
-                    </dt>
-                    <dd className="font-semibold text-navy">{t('training.feePending')}</dd>
-                  </div>
-                </dl>
-
-                <ul className="mt-5 space-y-2 border-t border-line pt-4">
-                  {course.objectives.slice(0, 3).map((objective) => (
-                    <li key={objective} className="flex gap-2 text-[0.75rem] leading-relaxed text-muted">
-                      <Check className="mt-0.5 size-3 shrink-0 text-gold-deep" aria-hidden="true" />
-                      {objective}
-                    </li>
-                  ))}
-                </ul>
-
+                <h2 className="text-[1.125rem] font-semibold leading-snug text-navy">{course.title}</h2>
+                {course.duration && <p className="mt-3 text-sm text-muted">{t('training.duration')}: {course.duration}</p>}
                 <Link
-                  to={`/training/${course.id}`}
+                  to={`/training/${course.slug}`}
                   className="mt-5 inline-flex items-center gap-1.5 text-[0.625rem] font-bold uppercase tracking-[0.12em] text-navy hover:text-gold-deep"
                 >
                   <ArrowLeft className="size-3.5" aria-hidden="true" />
@@ -94,7 +74,15 @@ export function RegisterCoursePage() {
           </aside>
 
           <div className="border border-line p-6 sm:p-8">
-            <RegistrationForm course={course} />
+            {course.registrationEnabled ? (
+              <RegistrationForm course={course} />
+            ) : (
+              <EmptyState
+                title="Registration is not open"
+                text="This course is not currently accepting registration requests."
+                action={<Button asChild variant="outline"><Link to={`/training/${course.slug}`}>Return to course</Link></Button>}
+              />
+            )}
           </div>
         </div>
       </section>

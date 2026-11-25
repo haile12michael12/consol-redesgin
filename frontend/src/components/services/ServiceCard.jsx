@@ -8,13 +8,17 @@ export function ServiceCard({ service, index = 0 }) {
   return (
     <article className="group flex h-full flex-col border border-line bg-white transition-all duration-300 hover:border-line-strong hover:shadow-card">
       <Link to={`/services/${service.slug}`} className="relative block aspect-[16/10] overflow-hidden">
-        <img
-          src={service.image}
-          alt={service.imageAlt}
-          loading="lazy"
-          decoding="async"
-          className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-        />
+        {service.image ? (
+          <img
+            src={service.image}
+            alt={service.imageAlt ?? ''}
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+        ) : (
+          <div className="h-full w-full bg-canvas" role="img" aria-label="Service image not provided" />
+        )}
         <span className="absolute left-3 top-3 bg-navy/90 px-2 py-1 font-display text-[0.75rem] text-gold backdrop-blur-sm">
           {String(index + 1).padStart(2, '0')}
         </span>

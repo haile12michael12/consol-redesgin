@@ -1,4 +1,5 @@
 import { ArrowRight, ArrowUpRight, ChevronDown, Mail, Menu, Phone, X } from 'lucide-react'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useEffect, useId, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { Logo } from '@/components/common/Logo'
@@ -9,17 +10,31 @@ import { primaryNav } from '@/lib/navigation'
 import { cn } from '@/lib/utils'
 import { LanguageSwitcher } from './LanguageSwitcher'
 
-function isActivePath(pathname, to) {
-  const base = to.split('?')[0].split('#')[0]
-  if (base === '/') return pathname === '/'
-  return pathname === base || pathname.startsWith(`${base}/`)
+function isActivePath(pathname, to, search = '', hash = '') {
+  const target = new URL(to, 'https://consol.local')
+  const pathMatches =
+    target.pathname === '/'
+      ? pathname === '/'
+      : pathname === target.pathname || pathname.startsWith(`${target.pathname}/`)
+  if (!pathMatches) return false
+
+  const targetParams = new URLSearchParams(target.search)
+  const currentParams = new URLSearchParams(search)
+  for (const [key, value] of targetParams) {
+    if (currentParams.get(key) !== value) return false
+  }
+  if (target.hash && target.pathname === pathname && hash !== target.hash) return false
+  return true
 }
 
-function DesktopDropdown({ item, openKey, setOpenKey }) {
+function DesktopDropdown({ item, openKey, setOpenKey, pathname, search, hash }) {
   const t = useT()
+  const reduceMotion = useReducedMotion()
   const id = useId()
   const open = openKey === item.labelKey
+  const active = isActivePath(pathname, item.to, search, hash)
   const timer = useRef(null)
+  const hoverOpened = useRef(false)
   const triggerRef = useRef(null)
 
   const cancelClose = () => {
@@ -37,9 +52,15 @@ function DesktopDropdown({ item, openKey, setOpenKey }) {
       className="relative"
       onMouseEnter={() => {
         cancelClose()
+        if (openKey !== item.labelKey) hoverOpened.current = true
         setOpenKey(item.labelKey)
       }}
-      onMouseLeave={scheduleClose}
+      onMouseLeave={(event) => {
+        if (!event.currentTarget.contains(document.activeElement)) scheduleClose()
+      }}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setOpenKey(null)
+      }}
       onKeyDown={(event) => {
         if (event.key === 'Escape' && open) {
           setOpenKey(null)
@@ -53,11 +74,23 @@ function DesktopDropdown({ item, openKey, setOpenKey }) {
         aria-expanded={open}
         aria-controls={id}
         aria-haspopup="true"
-        onClick={() => setOpenKey(open ? null : item.labelKey)}
+        onClick={(event) => {
+          if (event.detail === 0) {
+            setOpenKey(open ? null : item.labelKey)
+          } else if (hoverOpened.current) {
+            hoverOpened.current = false
+            setOpenKey(item.labelKey)
+          } else {
+            setOpenKey(open ? null : item.labelKey)
+          }
+        }}
+        aria-current={active ? 'page' : undefined}
         className={cn(
           'relative flex h-20 items-center gap-1.5 px-3 text-[0.8125rem] font-semibold transition-colors',
           'after:absolute after:inset-x-3 after:bottom-0 after:h-[2px] after:origin-left after:scale-x-0 after:bg-gold after:transition-transform after:duration-300',
-          open ? 'text-gold-deep after:scale-x-100' : 'text-navy hover:text-gold-deep',
+          open || active
+            ? 'text-gold-deep after:scale-x-100'
+            : 'text-navy hover:text-gold-deep',
         )}
       >
         {t(item.labelKey)}
@@ -67,13 +100,18 @@ function DesktopDropdown({ item, openKey, setOpenKey }) {
         />
       </button>
 
-      <div
+      <motion.div
         id={id}
         className={cn(
-          'absolute left-0 top-full z-40 w-[min(44rem,calc(100vw-5rem))] border border-line bg-white shadow-[0_40px_80px_-40px_rgba(16,29,50,0.5)] transition-all duration-200',
+          'absolute left-0 top-full z-40 w-[min(44rem,calc(100vw-5rem))] border border-line bg-white shadow-[0_40px_80px_-40px_rgba(16,29,50,0.5)]',
           item.alignEnd && 'right-0 left-auto',
-          open ? 'visible translate-y-0 opacity-100' : 'invisible -translate-y-2 opacity-0',
+          open ? 'pointer-events-auto' : 'pointer-events-none',
         )}
+        initial={false}
+        animate={{ opacity: open ? 1 : 0, y: open ? 0 : -8 }}
+        transition={{ duration: reduceMotion ? 0 : 0.18, ease: 'easeOut' }}
+        aria-hidden={!open}
+        inert={!open}
       >
         <div className="grid grid-cols-[1.55fr_1fr]">
           <div className="grid grid-cols-2 gap-8 p-8">
@@ -88,6 +126,7 @@ function DesktopDropdown({ item, openKey, setOpenKey }) {
                       <Link
                         to={link.to}
                         onClick={() => setOpenKey(null)}
+                        aria-current={isActivePath(pathname, link.to, search, hash) ? 'page' : undefined}
                         className="group block border-l border-transparent py-1.5 pl-0 transition-all hover:border-gold hover:pl-3"
                       >
                         <span className="flex items-center gap-1.5 text-[0.875rem] font-medium text-navy transition-colors group-hover:text-gold-deep">
@@ -130,7 +169,7 @@ function DesktopDropdown({ item, openKey, setOpenKey }) {
             </Link>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   )
 }
@@ -138,16 +177,22 @@ function DesktopDropdown({ item, openKey, setOpenKey }) {
 export function SiteHeader() {
   const t = useT()
   const location = useLocation()
+  const reduceMotion = useReducedMotion()
   const [openKey, setOpenKey] = useState(null)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [mobileSection, setMobileSection] = useState(null)
   const menuRef = useRef(null)
   const menuButtonRef = useRef(null)
+  const closeMobileMenu = () => {
+    setMobileOpen(false)
+    menuButtonRef.current?.focus()
+  }
 
   useEffect(() => {
     setMobileOpen(false)
     setOpenKey(null)
+    setMobileSection(null)
   }, [location.pathname, location.search])
 
   useEffect(() => {
@@ -188,17 +233,19 @@ export function SiteHeader() {
       }
     }
     document.addEventListener('keydown', onKey)
-    window.setTimeout(() => menuRef.current?.querySelector('a,button')?.focus(), 60)
-    return () => document.removeEventListener('keydown', onKey)
+    const focusTimeout = window.setTimeout(
+      () => menuRef.current?.querySelector('a,button')?.focus(),
+      60,
+    )
+    return () => {
+      window.clearTimeout(focusTimeout)
+      document.removeEventListener('keydown', onKey)
+    }
   }, [mobileOpen])
 
   useEffect(() => {
     const onClickOutside = (event) => {
-      if (
-        openKey &&
-        !event.target.closest('[data-nav-dropdown]') &&
-        !event.target.closest('header')
-      ) {
+      if (openKey && !event.target.closest('[data-nav-dropdown]')) {
         setOpenKey(null)
       }
     }
@@ -218,8 +265,7 @@ export function SiteHeader() {
       {/* Utility bar — verified contact information */}
       <div
         className={cn(
-          'relative z-30 hidden bg-navy text-white/70 transition-all duration-300 lg:block',
-          scrolled ? 'h-0 overflow-hidden opacity-0' : 'opacity-100',
+          'relative z-30 hidden bg-navy text-white/70 lg:block',
         )}
       >
         <div className="shell flex h-9 items-center justify-between text-[0.6875rem] tracking-[0.03em]">
@@ -255,7 +301,14 @@ export function SiteHeader() {
             {primaryNav.map((item) =>
               item.columns ? (
                 <div key={item.labelKey} data-nav-dropdown>
-                  <DesktopDropdown item={item} openKey={openKey} setOpenKey={setOpenKey} />
+                  <DesktopDropdown
+                    item={item}
+                    openKey={openKey}
+                    setOpenKey={setOpenKey}
+                    pathname={location.pathname}
+                    search={location.search}
+                    hash={location.hash}
+                  />
                 </div>
               ) : (
                 <NavLink
@@ -266,7 +319,8 @@ export function SiteHeader() {
                     cn(
                       'relative flex h-20 items-center px-3 text-[0.8125rem] font-semibold transition-colors',
                       'after:absolute after:inset-x-3 after:bottom-0 after:h-[2px] after:origin-left after:bg-gold after:transition-transform after:duration-300',
-                      isActive || isActivePath(location.pathname, item.to)
+                      isActive ||
+                      isActivePath(location.pathname, item.to, location.search, location.hash)
                         ? 'text-navy after:scale-x-100'
                         : 'text-navy hover:text-gold-deep',
                     )
@@ -308,30 +362,36 @@ export function SiteHeader() {
         )}
         aria-hidden={!mobileOpen}
       >
-        <div
+        <motion.div
           className={cn(
-            'absolute inset-0 bg-navy/60 backdrop-blur-[2px] transition-opacity duration-300',
-            mobileOpen ? 'opacity-100' : 'opacity-0',
+            'absolute inset-0 bg-navy/60 backdrop-blur-[2px]',
           )}
-          onClick={() => setMobileOpen(false)}
+          animate={{ opacity: mobileOpen ? 1 : 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.25 }}
+          onClick={closeMobileMenu}
         />
-        <div
+        <motion.div
           ref={menuRef}
           id="mobile-navigation"
           role="dialog"
           aria-modal="true"
           aria-label={t('nav.mobileNavigation')}
           className={cn(
-            'absolute right-0 top-0 flex h-full w-[min(24rem,92vw)] flex-col bg-white shadow-2xl transition-transform duration-300 ease-[cubic-bezier(0.22,0.61,0.36,1)]',
-            mobileOpen ? 'translate-x-0' : 'translate-x-full',
+            'absolute right-0 top-0 flex h-full w-[min(24rem,92vw)] flex-col bg-white shadow-2xl',
           )}
+          initial={{ x: '100%' }}
+          animate={{ x: mobileOpen ? '0%' : '100%' }}
+          transition={{
+            duration: reduceMotion ? 0 : 0.3,
+            ease: [0.22, 0.61, 0.36, 1],
+          }}
           inert={!mobileOpen}
         >
           <div className="flex h-[4.5rem] items-center justify-between border-b border-line px-5">
             <Logo compact />
             <button
               type="button"
-              onClick={() => setMobileOpen(false)}
+              onClick={closeMobileMenu}
               aria-label={t('nav.closeMenu')}
               className="grid size-10 place-items-center border border-line text-navy transition-colors hover:bg-canvas"
             >
@@ -368,6 +428,7 @@ export function SiteHeader() {
                           ? 'grid-rows-[1fr] pb-3 opacity-100'
                           : 'grid-rows-[0fr] opacity-0',
                       )}
+                      inert={mobileSection !== item.labelKey}
                     >
                       <ul className="overflow-hidden pl-1">
                         {item.columns.flatMap((column) =>
@@ -376,7 +437,22 @@ export function SiteHeader() {
                               <Link
                                 to={link.to}
                                 onClick={() => setMobileOpen(false)}
-                                className="flex items-center justify-between gap-2 border-l border-line py-2.5 pl-4 text-[0.875rem] text-muted transition-colors hover:border-gold hover:text-navy"
+                                aria-current={
+                                  isActivePath(location.pathname, link.to, location.search, location.hash)
+                                    ? 'page'
+                                    : undefined
+                                }
+                                className={cn(
+                                  'flex items-center justify-between gap-2 border-l border-line py-2.5 pl-4 text-[0.875rem] transition-colors hover:border-gold hover:text-navy',
+                                  isActivePath(
+                                    location.pathname,
+                                    link.to,
+                                    location.search,
+                                    location.hash,
+                                  )
+                                    ? 'border-gold font-semibold text-navy'
+                                    : 'text-muted',
+                                )}
                               >
                                 {t(link.labelKey)}
                                 <ArrowUpRight className="size-3.5 opacity-40" aria-hidden="true" />
@@ -393,7 +469,12 @@ export function SiteHeader() {
                       to={item.to}
                       end={item.to === '/'}
                       onClick={() => setMobileOpen(false)}
-                      className="flex items-center justify-between py-4 text-[0.9375rem] font-semibold text-navy"
+                      className={({ isActive }) =>
+                        cn(
+                          'flex items-center justify-between py-4 text-[0.9375rem] font-semibold',
+                          isActive ? 'text-gold-deep' : 'text-navy',
+                        )
+                      }
                     >
                       {t(item.labelKey)}
                     </NavLink>
@@ -427,7 +508,7 @@ export function SiteHeader() {
             </span>
             <LanguageSwitcher compact />
           </div>
-        </div>
+        </motion.div>
       </div>
     </>
   )

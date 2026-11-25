@@ -10,7 +10,7 @@ export function SelectTrigger({ className, children, invalid, ...props }) {
   return (
     <SelectPrimitive.Trigger
       className={cn(
-        'flex h-11 w-full items-center justify-between rounded-[3px] border border-input bg-white px-3.5 text-left text-[0.9375rem] text-ink outline-none transition-colors focus:border-gold focus:ring-2 focus:ring-gold/25 aria-[invalid=true]:border-danger data-[placeholder]:text-muted/75 disabled:cursor-not-allowed disabled:bg-canvas [&>span]:line-clamp-1',
+        'flex h-11 w-full items-center justify-between rounded-[3px] border border-input bg-white px-3.5 text-left text-[0.9375rem] text-ink outline-none transition-colors focus:border-gold focus:ring-2 focus:ring-gold/25 aria-[invalid=true]:border-danger data-[placeholder]:text-muted disabled:cursor-not-allowed disabled:bg-canvas [&>span]:line-clamp-1',
         className,
       )}
       aria-invalid={invalid || undefined}

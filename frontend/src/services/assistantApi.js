@@ -7,7 +7,6 @@
  * calls our own API — provider keys must never reach this file.
  */
 import { company, contact, credentials } from '@/lib/site'
-import { demoCourses } from '@/data/courses'
 
 const ENDPOINT = import.meta.env.VITE_ASSISTANT_ENDPOINT
 
@@ -24,7 +23,7 @@ const knowledge = [
   },
   {
     test: /training|course|pmp|revit|certif/i,
-    answer: `CONSOL delivers construction management programmes, construction management software and engineering software courses, plus PMI® and Autodesk® certification preparation. Published examples include PMI® PMP (35 PDUs), Revit Architecture (36 hrs), ETABS (40 hrs) and MS Project (30 hrs). The full catalogue is on the Training page.`,
+    answer: 'The Training page lists courses and instructor profiles currently published by CONSOL. Course details are added when confirmed.',
   },
   {
     test: /project|client|worked/i,
@@ -68,7 +67,7 @@ function localAnswer(question) {
     return 'Fees are not published on the website. The CONSOL team confirms fees when an intake is scheduled — please submit a registration interest or contact the office.'
   }
   if (/date|schedule|calendar|when/i.test(normalised)) {
-    return `Upcoming session dates are not yet published. CONSOL posts a quarterly training plan. There are currently ${demoCourses.length} published course areas in the catalogue. Contact the office to confirm the next intake.`
+    return 'Check the Training Schedule page for confirmed upcoming sessions. A schedule will appear there after CONSOL publishes it.'
   }
   return null
 }
