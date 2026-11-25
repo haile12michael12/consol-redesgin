@@ -40,6 +40,12 @@ export const contact = {
   landlineHref: 'tel:+251114700452',
   mobile: company.mobile,
   mobileHref: 'tel:+251911513011',
+  // WhatsApp shortcut number. This is the verified company mobile number
+  // published on the live website, so it is an official company number.
+  // Confirm with CONSOL that the number accepts WhatsApp messages before
+  // relying on the floating shortcut; set to null to disable it.
+  whatsappNumber: '251911513011',
+  whatsappHref: 'https://wa.me/251911513011',
   addressLines: [
     company.address.line1,
     `${company.address.line2}`,

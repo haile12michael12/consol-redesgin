@@ -62,6 +62,12 @@ const ContactPage = lazy(() =>
 const ConsultationPage = lazy(() =>
   import('@/pages/public/ConsultationPage').then((m) => ({ default: m.ConsultationPage })),
 )
+const PrivacyPage = lazy(() =>
+  import('@/pages/public/legal/PrivacyPage').then((m) => ({ default: m.PrivacyPage })),
+)
+const TermsPage = lazy(() =>
+  import('@/pages/public/legal/TermsPage').then((m) => ({ default: m.TermsPage })),
+)
 
 /* Admin */
 const AdminLoginPage = lazy(() =>
@@ -131,6 +137,9 @@ export default function AppRoutes() {
           path="request-consultation"
           element={<SuspenseBoundary><ConsultationPage /></SuspenseBoundary>}
         />
+
+        <Route path="privacy" element={<SuspenseBoundary><PrivacyPage /></SuspenseBoundary>} />
+        <Route path="terms" element={<SuspenseBoundary><TermsPage /></SuspenseBoundary>} />
 
         <Route path="*" element={<NotFoundPage />} />
       </Route>

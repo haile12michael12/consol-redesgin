@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom'
+import { FloatingActions } from '@/components/common/FloatingActions'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { useScrollRestoration } from '@/lib/scroll'
@@ -12,6 +13,7 @@ export function PublicLayout() {
         <Outlet />
       </main>
       <SiteFooter />
+      <FloatingActions />
     </div>
   )
 }
