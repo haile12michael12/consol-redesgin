@@ -91,6 +91,9 @@ const AdminLoginPage = lazy(() =>
 const DashboardPage = lazy(() =>
   import('@/pages/admin/DashboardPage').then((m) => ({ default: m.DashboardPage })),
 )
+const AnalyticsAdminPage = lazy(() =>
+  import('@/pages/admin/AnalyticsAdminPage').then((m) => ({ default: m.AnalyticsAdminPage })),
+)
 const PagesAdminPage = lazy(() =>
   import('@/pages/admin/PagesAdminPage').then((m) => ({ default: m.PagesAdminPage })),
 )
@@ -229,7 +232,7 @@ export default function AppRoutes() {
         />
         <Route
           path="analytics"
-          element={<SuspenseBoundary><AdminModulePage moduleKey="analytics" /></SuspenseBoundary>}
+          element={<SuspenseBoundary><AnalyticsAdminPage /></SuspenseBoundary>}
         />
         <Route
           path="users"

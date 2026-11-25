@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\AnalyticsController;
 use App\Http\Controllers\Api\CertificateController;
 use App\Http\Controllers\Api\CourseController;
 use App\Http\Controllers\Api\InquiryController;
@@ -29,6 +30,9 @@ Route::middleware(['web', 'auth', 'admin'])->prefix('admin/services')->group(fun
     Route::put('/{service}', [ServiceController::class, 'update']);
     Route::delete('/{service}', [ServiceController::class, 'destroy']);
 });
+
+Route::middleware(['web', 'auth', 'admin'])
+    ->get('/admin/analytics', [AnalyticsController::class, 'summary']);
 
 Route::middleware(['web', 'auth', 'admin'])->prefix('admin/inquiries')->group(function () {
     Route::get('/', [InquiryController::class, 'adminIndex']);
