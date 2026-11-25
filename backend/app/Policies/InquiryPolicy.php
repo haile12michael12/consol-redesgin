@@ -9,26 +9,26 @@ class InquiryPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isAdministrator();
+        return $user->hasPermission('inquiries.manage');
     }
 
     public function view(User $user, Inquiry $inquiry): bool
     {
-        return $user->isAdministrator();
+        return $user->hasPermission('inquiries.manage');
     }
 
     public function update(User $user, Inquiry $inquiry): bool
     {
-        return $user->isAdministrator();
+        return $user->hasPermission('inquiries.manage');
     }
 
     public function addNote(User $user, Inquiry $inquiry): bool
     {
-        return $user->isAdministrator();
+        return $user->hasPermission('inquiries.manage');
     }
 
     public function export(User $user): bool
     {
-        return $user->isAdministrator();
+        return $user->hasPermission('inquiries.manage');
     }
 }

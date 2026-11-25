@@ -9,16 +9,16 @@ class EnrollmentPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isAdministrator();
+        return $user->hasPermission('registrations.manage');
     }
 
     public function update(User $user, Enrollment $enrollment): bool
     {
-        return $user->isAdministrator();
+        return $user->hasPermission('registrations.manage');
     }
 
     public function recordAttendance(User $user, Enrollment $enrollment): bool
     {
-        return $user->isAdministrator();
+        return $user->hasPermission('registrations.manage');
     }
 }

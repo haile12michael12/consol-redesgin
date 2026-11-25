@@ -10,6 +10,13 @@ class Role extends Model
 {
     use HasFactory;
 
+    protected $fillable = ['name', 'label', 'is_system'];
+
+    protected function casts(): array
+    {
+        return ['is_system' => 'boolean'];
+    }
+
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class);

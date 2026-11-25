@@ -9,26 +9,26 @@ class CoursePolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->isAdministrator();
+        return $user->hasPermission('training.manage');
     }
 
     public function create(User $user): bool
     {
-        return $user->isAdministrator();
+        return $user->hasPermission('training.manage');
     }
 
     public function update(User $user, Course $course): bool
     {
-        return $user->isAdministrator();
+        return $user->hasPermission('training.manage');
     }
 
     public function delete(User $user, Course $course): bool
     {
-        return $user->isAdministrator();
+        return $user->hasPermission('training.manage');
     }
 
     public function manage(User $user): bool
     {
-        return $user->isAdministrator();
+        return $user->hasPermission('training.manage');
     }
 }

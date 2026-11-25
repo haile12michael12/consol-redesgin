@@ -95,7 +95,7 @@ const AnalyticsAdminPage = lazy(() =>
   import('@/pages/admin/AnalyticsAdminPage').then((m) => ({ default: m.AnalyticsAdminPage })),
 )
 const PagesAdminPage = lazy(() =>
-  import('@/pages/admin/PagesAdminPage').then((m) => ({ default: m.PagesAdminPage })),
+  import('@/pages/admin/PagesCmsAdminPage').then((m) => ({ default: m.PagesCmsAdminPage })),
 )
 const AdminModulePage = lazy(() =>
   import('@/pages/admin/AdminModulePage').then((m) => ({ default: m.AdminModulePage })),

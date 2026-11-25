@@ -8,14 +8,19 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'is_active'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    protected $attributes = [
+        'is_active' => true,
+    ];
 
     /**
      * Get the attributes that should be cast.
@@ -28,11 +33,38 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'is_active' => 'boolean',
         ];
+    }
+
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class);
+    }
+
+    public function hasRole(string $role): bool
+    {
+        return $this->roles()->where('name', $role)->exists();
+    }
+
+    public function hasPermission(string $permission): bool
+    {
+        if ($this->is_admin || $this->hasRole('administrator')) {
+            return true;
+        }
+
+        return $this->roles()
+            ->whereHas('permissions', fn ($query) => $query->where('name', $permission))
+            ->exists();
+    }
+
+    public function canAccessAdmin(): bool
+    {
+        return $this->is_active && ($this->is_admin || $this->roles()->exists());
     }
 
     public function isAdministrator(): bool
     {
-        return $this->is_admin;
+        return $this->is_active && ($this->is_admin || $this->hasRole('administrator'));
     }
 }

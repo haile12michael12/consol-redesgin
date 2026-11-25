@@ -71,8 +71,30 @@ function SidebarLink({ item, onNavigate }) {
   )
 }
 
-function Sidebar({ onNavigate }) {
+const permissionByPath = {
+  '/admin/dashboard': 'analytics.view',
+  '/admin/pages': 'pages.manage',
+  '/admin/company-profile': 'settings.manage',
+  '/admin/services': 'services.manage',
+  '/admin/projects': 'projects.manage',
+  '/admin/training': 'training.manage',
+  '/admin/registrations': 'registrations.manage',
+  '/admin/certificates': 'certificates.manage',
+  '/admin/news': 'news.manage',
+  '/admin/media': 'media.manage',
+  '/admin/inquiries': 'inquiries.manage',
+  '/admin/analytics': 'analytics.view',
+  '/admin/users': 'users.manage',
+  '/admin/settings': 'settings.manage',
+}
+
+function Sidebar({ onNavigate, user }) {
   const t = useT()
+  const isAdministrator = user.is_admin || user.roles?.some((role) => role.name === 'administrator')
+  const permissions = new Set(user.roles?.flatMap((role) => role.permissions.map((permission) => permission.name)) ?? [])
+  const visibleNavigation = adminNav.filter((item) => (
+    isAdministrator || permissions.has(permissionByPath[item.to])
+  ))
   return (
     <div className="flex h-full flex-col bg-navy">
       <div className="flex h-16 items-center border-b border-white/10 px-4">
@@ -85,7 +107,7 @@ function Sidebar({ onNavigate }) {
       </div>
       <nav aria-label={t('admin.title')} className="flex-1 overflow-y-auto py-3">
         <ul className="space-y-0.5">
-          {adminNav.map((item) => (
+          {visibleNavigation.map((item) => (
             <li key={item.to}>
               <SidebarLink item={item} onNavigate={onNavigate} />
             </li>
@@ -144,12 +166,12 @@ export function AdminLayout() {
       </div>
     )
   }
-  if (!auth.data?.is_admin) return <Navigate to="/admin/login" replace state={{ from: location }} />
+  if (!auth.data?.is_admin && !auth.data?.roles?.length) return <Navigate to="/admin/login" replace state={{ from: location }} />
 
   return (
     <div className="min-h-screen bg-[#f6f7f9]">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 lg:block">
-        <Sidebar />
+        <Sidebar user={auth.data} />
       </aside>
 
       {mobileOpen && (
@@ -168,7 +190,7 @@ export function AdminLayout() {
             >
               <X className="size-4" />
             </button>
-            <Sidebar onNavigate={() => setMobileOpen(false)} />
+            <Sidebar user={auth.data} onNavigate={() => setMobileOpen(false)} />
           </div>
         </div>
       )}

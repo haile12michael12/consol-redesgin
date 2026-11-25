@@ -12,8 +12,8 @@ class EnsureUserIsAdministrator
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $request->user()?->isAdministrator()) {
-            abort(403, 'Administrator access is required.');
+        if (! $request->user()?->canAccessAdmin()) {
+            abort(403, 'Authorised staff access is required.');
         }
 
         $response = $next($request);
