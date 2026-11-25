@@ -60,6 +60,31 @@ until verified information is supplied. Grant `users.is_admin` only to
 approved staff through the organisation's controlled account provisioning
 process.
 
+## CONSOL news, events and resources API
+
+The public news API provides published articles, published categories,
+search/filtering, pagination, featured content and related articles through
+`/api/news`, `/api/news/categories` and `/api/news/{slug}`. Events are served
+from `/api/events` and `/api/events/{slug}` with upcoming/past filters. Approved
+public PDF resources are listed at `/api/resources` and downloaded through an
+access-checked endpoint.
+
+Administrators manage articles and their categories at `/admin/news`, events
+at `/admin/events`, and resources at `/admin/resources`. These endpoints use
+the existing authenticated administrator middleware. Articles and events
+support draft, scheduled and published status; scheduled items remain private
+until their publication time. Resource files must be PDFs and are never
+publicly downloadable until both their publication status and explicit
+public-release approval are set. Cover images are restricted to JPEG, PNG or
+WebP, stored on Laravel's private local disk, and delivered through endpoints
+that keep draft media private.
+
+Run `php artisan migrate` to create the content tables. `php artisan db:seed`
+imports only the three news summaries already present in the existing public
+API. It does not create events or downloadable resources; add those only after
+their details and publication rights have been confirmed. Provision
+administrator access only through the organisation's approved account process.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

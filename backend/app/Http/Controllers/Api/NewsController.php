@@ -406,7 +406,7 @@ class NewsController extends Controller
                 }
 
                 if ($article->featured) {
-                    NewsArticle::query()->whereKeyNot($article->id)->update(['featured' => false]);
+                    NewsArticle::query()->where('id', '<>', $article->id)->update(['featured' => false]);
                 }
 
                 return $article->load('category');

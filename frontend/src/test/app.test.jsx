@@ -65,6 +65,52 @@ vi.mock('@/services/authApi', () => ({
 
 import { submitRegistration } from '@/services/coursesApi'
 
+vi.mock('@/services/newsApi', () => {
+  const article = {
+    id: 1,
+    slug: 'approved-company-update',
+    title: 'Approved company update',
+    excerpt: 'A company update approved for publication.',
+    body: ['Published article body.'],
+    date: '2025-01-15',
+    publishedAt: '2025-01-15T00:00:00Z',
+    category: 'announcements',
+    categoryName: 'Announcements',
+    categoryId: 1,
+    featured: true,
+    image: null,
+    imageAlt: null,
+    status: 'published',
+    relatedArticles: [],
+  }
+  const page = { current_page: 1, last_page: 1, total: 1, data: [article] }
+  return {
+    newsApi: {
+      list: vi.fn(async (params = {}) => params.featured ? { ...page, data: [article] } : page),
+      categories: vi.fn(async () => [{ id: 1, slug: 'announcements', name: 'Announcements' }]),
+      show: vi.fn(async () => article),
+      events: vi.fn(async () => ({ current_page: 1, last_page: 1, total: 0, data: [] })),
+      showEvent: vi.fn(),
+      resources: vi.fn(async () => ({ current_page: 1, last_page: 1, total: 0, data: [] })),
+    },
+    newsAdminApi: {
+      listArticles: vi.fn(), categories: vi.fn(), createCategory: vi.fn(), updateCategory: vi.fn(),
+      deleteCategory: vi.fn(), createArticle: vi.fn(), updateArticle: vi.fn(), deleteArticle: vi.fn(),
+      listEvents: vi.fn(), createEvent: vi.fn(), updateEvent: vi.fn(), deleteEvent: vi.fn(),
+      listResources: vi.fn(), createResource: vi.fn(), updateResource: vi.fn(), deleteResource: vi.fn(),
+    },
+    newsQuery: {
+      all: ['news'],
+      list: (params = {}) => ['news', 'list', params],
+      categories: ['news', 'categories'],
+      detail: (slug) => ['news', 'detail', slug],
+      events: (params = {}) => ['events', params],
+      event: (slug) => ['events', 'detail', slug],
+      resources: (params = {}) => ['resources', params],
+    },
+  }
+})
+
 vi.mock('@/services/servicesApi', () => {
   const serviceRecords = [
     { slug: 'construction-management-consultancy', title: 'Construction Management Consultancy', summary: 'Published construction consultancy.', category: 'construction-management', image: '/media/site-inspection.jpg', imageAlt: 'Construction site', scope: [], benefits: [], status: 'published' },
@@ -217,6 +263,16 @@ describe('public routes', () => {
       '/training/verified-training-course',
     )
     expect(screen.getByText('No upcoming schedules published')).toBeInTheDocument()
+  })
+
+  it('renders only API-published news and leaves the resource library empty until approved files exist', async () => {
+    const newsRender = renderApp('/news')
+    expect(await screen.findAllByRole('heading', { name: 'Approved company update' })).toHaveLength(2)
+    expect(screen.queryByText(/Ethiopian Construction Project Management Manual Series/)).not.toBeInTheDocument()
+
+    newsRender.unmount()
+    renderApp('/resources')
+    expect(await screen.findByText('No approved resources published')).toBeInTheDocument()
   })
 
   it('shows the 404 page for an unknown route', async () => {

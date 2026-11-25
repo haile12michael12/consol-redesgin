@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { projects, projectCategories, publishedProjects } from '@/data/projects'
 import { services } from '@/data/services'
-import { news, events } from '@/data/news'
 import { company, contact, credentials } from '@/lib/site'
 
 describe('verified company data', () => {
@@ -25,8 +24,6 @@ describe('content model integrity', () => {
   it('uses unique slugs for every route collection', () => {
     expect(new Set(services.map((item) => item.slug)).size).toBe(services.length)
     expect(new Set(projects.map((item) => item.slug)).size).toBe(projects.length)
-    expect(new Set(news.map((item) => item.slug)).size).toBe(news.length)
-    expect(new Set(events.map((item) => item.slug)).size).toBe(events.length)
   })
 
   it('assigns every project a known category', () => {

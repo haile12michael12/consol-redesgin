@@ -128,7 +128,7 @@ export const primaryNav = [
       {
         headingKey: 'nav.resources',
         links: [
-          { labelKey: 'nav.downloads', to: '/news#resources' },
+          { labelKey: 'nav.downloads', to: '/resources' },
           { labelKey: 'nav.consultation', to: '/request-consultation' },
         ],
       },
@@ -164,7 +164,7 @@ export const footerNav = {
     { labelKey: 'nav.verifyCertificate', to: '/verify-certificate' },
     { labelKey: 'nav.newsInsights', to: '/news' },
     { labelKey: 'nav.events', to: '/events' },
-    { labelKey: 'nav.downloads', to: '/news#resources' },
+    { labelKey: 'nav.downloads', to: '/resources' },
   ],
   engage: [
     { labelKey: 'nav.requestConsultation', to: '/request-consultation' },

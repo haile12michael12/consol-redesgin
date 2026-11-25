@@ -74,6 +74,9 @@ const EventsPage = lazy(() => import('@/pages/public/EventsPage').then((m) => ({
 const EventDetailPage = lazy(() =>
   import('@/pages/public/EventDetailPage').then((m) => ({ default: m.EventDetailPage })),
 )
+const ResourcesPage = lazy(() =>
+  import('@/pages/public/ResourcesPage').then((m) => ({ default: m.ResourcesPage })),
+)
 const ContactPage = lazy(() =>
   import('@/pages/public/ContactPage').then((m) => ({ default: m.ContactPage })),
 )
@@ -111,6 +114,9 @@ const RegistrationsAdminPage = lazy(() =>
 )
 const CertificatesAdminPage = lazy(() =>
   import('@/pages/admin/CertificatesAdminPage').then((m) => ({ default: m.CertificatesAdminPage })),
+)
+const NewsAdminPage = lazy(() =>
+  import('@/pages/admin/NewsAdminPage').then((m) => ({ default: m.NewsAdminPage })),
 )
 
 function SuspenseBoundary({ children }) {
@@ -165,6 +171,7 @@ export default function AppRoutes() {
           <Route index element={<SuspenseBoundary><EventsPage /></SuspenseBoundary>} />
           <Route path=":slug" element={<SuspenseBoundary><EventDetailPage /></SuspenseBoundary>} />
         </Route>
+        <Route path="resources" element={<SuspenseBoundary><ResourcesPage /></SuspenseBoundary>} />
 
         <Route path="contact" element={<SuspenseBoundary><ContactPage /></SuspenseBoundary>} />
         <Route
@@ -207,7 +214,7 @@ export default function AppRoutes() {
         />
         <Route
           path="news"
-          element={<SuspenseBoundary><AdminModulePage moduleKey="news" /></SuspenseBoundary>}
+          element={<SuspenseBoundary><NewsAdminPage /></SuspenseBoundary>}
         />
         <Route
           path="media"
