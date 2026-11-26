@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { PublicLayout } from '@/layouts/PublicLayout'
 import { CardGridSkeleton } from '@/components/common/StateBlocks'
@@ -103,7 +103,7 @@ const AnalyticsAdminPage = lazy(() =>
 const PagesAdminPage = lazy(() =>
   import('@/pages/admin/PagesCmsAdminPage').then((m) => ({ default: m.PagesCmsAdminPage })),
 )
-const SettingsPage = lazy(() =>
+const SettingsAdminPage = lazy(() =>
   import('@/pages/admin/SettingsAdminPage').then((m) => ({ default: m.SettingsAdminPage })),
 )
 const ServicesAdminPage = lazy(() =>
@@ -205,10 +205,7 @@ export default function AppRoutes() {
         <Route index element={<SuspenseBoundary><DashboardPage /></SuspenseBoundary>} />
         <Route path="dashboard" element={<SuspenseBoundary><DashboardPage /></SuspenseBoundary>} />
         <Route path="pages" element={<SuspenseBoundary><PagesAdminPage /></SuspenseBoundary>} />
-        <Route
-          path="company-profile"
-          element={<SuspenseBoundary><SettingsPage /></SuspenseBoundary>}
-        />
+        <Route path="company-profile" element={<Navigate to="/admin/settings" replace />} />
         <Route
           path="services"
           element={<SuspenseBoundary><ServicesAdminPage /></SuspenseBoundary>}
@@ -253,7 +250,7 @@ export default function AppRoutes() {
           path="users"
           element={<SuspenseBoundary><UsersAdminPage /></SuspenseBoundary>}
         />
-        <Route path="settings" element={<SuspenseBoundary><SettingsPage /></SuspenseBoundary>} />
+        <Route path="settings" element={<SuspenseBoundary><SettingsAdminPage /></SuspenseBoundary>} />
         <Route path="security" element={<SuspenseBoundary><AdminSecurityPage /></SuspenseBoundary>} />
       </Route>
     </Routes>

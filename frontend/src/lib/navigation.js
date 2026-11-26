@@ -176,7 +176,6 @@ export const footerNav = {
 export const adminNav = [
   { labelKey: 'admin.nav.dashboard', to: '/admin/dashboard', icon: 'LayoutDashboard' },
   { labelKey: 'admin.nav.pages', to: '/admin/pages', icon: 'Files' },
-  { labelKey: 'admin.nav.profile', to: '/admin/company-profile', icon: 'Building2' },
   { labelKey: 'admin.nav.services', to: '/admin/services', icon: 'Briefcase' },
   { labelKey: 'admin.nav.projects', to: '/admin/projects', icon: 'FolderKanban' },
   { labelKey: 'admin.nav.training', to: '/admin/training', icon: 'GraduationCap' },

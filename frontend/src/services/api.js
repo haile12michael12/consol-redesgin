@@ -11,7 +11,8 @@ import axios from 'axios'
  */
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000/api'
 
-export const DEMO_ENABLED = import.meta.env.VITE_ENABLE_DEMO_DATA === 'true'
+export const DEMO_ENABLED =
+  import.meta.env.MODE !== 'production' && import.meta.env.VITE_ENABLE_DEMO_DATA === 'true'
 
 export const api = axios.create({
   baseURL: API_BASE_URL,

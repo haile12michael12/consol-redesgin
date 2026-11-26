@@ -514,6 +514,8 @@ const en = {
   'consult.form.service': 'Service category',
   'consult.form.servicePlaceholder': 'Select a service area',
   'consult.form.serviceError': 'Please select a service category.',
+  'consult.form.servicesLoading': 'Loading published service options…',
+  'consult.form.servicesError': 'Published service options could not be loaded. You can still select Other.',
   'consult.form.description': 'Project description',
   'consult.form.success': 'Consultation request received',
   'consult.form.successText':
@@ -566,7 +568,6 @@ const en = {
   'admin.login.notice': 'Credentials are verified by the CONSOL API over the protected staff sign-in flow.',
   'admin.nav.dashboard': 'Dashboard',
   'admin.nav.pages': 'Website pages',
-  'admin.nav.profile': 'Company profile',
   'admin.nav.services': 'Services',
   'admin.nav.projects': 'Projects',
   'admin.nav.training': 'Training',

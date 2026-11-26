@@ -2,7 +2,6 @@ import {
   Award,
   Bell,
   Briefcase,
-  Building2,
   CalendarDays,
   ChartNoAxesCombined,
   ClipboardList,
@@ -37,7 +36,6 @@ import { normaliseError } from '@/services/api'
 const icons = {
   LayoutDashboard,
   Files,
-  Building2,
   CalendarDays,
   Briefcase,
   FolderKanban,
@@ -78,7 +76,6 @@ function SidebarLink({ item, onNavigate }) {
 const permissionByPath = {
   '/admin/dashboard': 'analytics.view',
   '/admin/pages': 'pages.manage',
-  '/admin/company-profile': 'settings.manage',
   '/admin/services': 'services.manage',
   '/admin/projects': 'projects.manage',
   '/admin/training': 'training.manage',

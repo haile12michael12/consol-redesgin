@@ -271,6 +271,8 @@ const am = {
   'consult.hero.title': 'ምክክር ይጠይቁ።',
   'consult.side.title': 'ቀጥሎ ምን ይሆናል',
   'consult.form.service': 'የአገልግሎት ምድብ',
+  'consult.form.servicesLoading': 'የታተሙ አገልግሎቶችን በመጫን ላይ…',
+  'consult.form.servicesError': 'የታተሙ አገልግሎቶች ማምጣት አልተቻለም። አሁንም “ሌላ” መምረጥ ይችላሉ።',
   'consult.form.description': 'የፕሮጀክት መግለጫ',
   'consult.form.preferred': 'የሚመርጡት የግንኙነት መንገድ',
 
@@ -300,7 +302,6 @@ const am = {
   'admin.login.submit': 'ግባ',
   'admin.nav.dashboard': 'ዳሽቦርድ',
   'admin.nav.pages': 'የድረ-ገጽ ገጾች',
-  'admin.nav.profile': 'የድርጅት መገለጫ',
   'admin.nav.services': 'አገልግሎቶች',
   'admin.nav.projects': 'ፕሮጀክቶች',
   'admin.nav.training': 'ስልጠና',

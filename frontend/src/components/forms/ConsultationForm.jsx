@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useSearchParams } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
@@ -9,16 +9,17 @@ import { SubmitButton } from './SubmitButton'
 import { Label } from '@/components/ui/field'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useT } from '@/i18n/LanguageProvider'
+import { useServices } from '@/hooks/useServices'
 import { consultationSchema } from '@/lib/schemas'
 import { contact } from '@/lib/site'
-import { services } from '@/data/services'
 import { submitConsultation } from '@/services/inquiriesApi'
 
 export function ConsultationForm() {
   const t = useT()
   const [searchParams] = useSearchParams()
+  const { data: publishedServices, error: servicesError, isLoading: servicesLoading } = useServices()
+  const services = publishedServices ?? []
   const requestedService = searchParams.get('service')
-  const initialService = services.some((item) => item.slug === requestedService) ? requestedService : ''
   const [status, setStatus] = useState('idle')
   const [source, setSource] = useState(null)
   const [serverError, setServerError] = useState(null)
@@ -37,7 +38,7 @@ export function ConsultationForm() {
       organization: '',
       email: '',
       phone: '',
-      serviceOfInterest: initialService,
+      serviceOfInterest: '',
       projectDescription: '',
       preferredContactMethod: 'email',
       website: '',
@@ -45,6 +46,12 @@ export function ConsultationForm() {
   })
 
   const service = watch('serviceOfInterest')
+
+  useEffect(() => {
+    if (!service && services.some((item) => item.slug === requestedService)) {
+      setValue('serviceOfInterest', requestedService, { shouldValidate: false })
+    }
+  }, [requestedService, service, services, setValue])
 
   const onSubmit = async (values) => {
     setStatus('pending')
@@ -138,23 +145,32 @@ export function ConsultationForm() {
               setValue('serviceOfInterest', value, { shouldValidate: true, shouldDirty: true })
             }
           >
-            <SelectTrigger id="consult-service" invalid={Boolean(errors.service)} aria-describedby={errors.service ? 'consult-service-error' : undefined}>
+            <SelectTrigger
+              id="consult-service"
+              invalid={Boolean(errors.serviceOfInterest)}
+              aria-describedby={errors.serviceOfInterest ? 'consult-service-error' : undefined}
+            >
               <SelectValue placeholder={t('consult.form.servicePlaceholder')} />
             </SelectTrigger>
             <SelectContent>
               {services.map((item) => (
                 <SelectItem key={item.slug} value={item.slug}>
-                  {t(item.titleKey)}
+                  {item.title}
                 </SelectItem>
               ))}
-              <SelectItem value="training">{t('service.training.shortTitle')}</SelectItem>
               <SelectItem value="other">Other</SelectItem>
             </SelectContent>
           </Select>
+          {servicesLoading && (
+            <p className="text-xs text-muted" role="status">{t('consult.form.servicesLoading')}</p>
+          )}
+          {servicesError && (
+            <p className="text-xs text-danger" role="status">{t('consult.form.servicesError')}</p>
+          )}
           <input type="hidden" {...register('serviceOfInterest')} />
-          {errors.service && (
+          {errors.serviceOfInterest && (
             <p id="consult-service-error" className="field-error" role="alert">
-              {t(errors.service.message)}
+              {t(errors.serviceOfInterest.message)}
             </p>
           )}
         </div>
