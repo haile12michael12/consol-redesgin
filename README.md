@@ -103,6 +103,17 @@ The project schema includes fields for project type/date, context, objectives, c
 
 ## Build and deployment
 
-`npm run build` in `frontend/` produces the static site in `frontend/dist/`. Configure the web host to serve the frontend over HTTPS and rewrite client-side routes to `index.html`. Set `VITE_API_BASE_URL` to the deployed Laravel API URL at build time, then configure the API's CORS and Sanctum settings to allow the production frontend origin.
+### Deploy the frontend to Vercel
+
+1. Import this repository into Vercel.
+2. Set the Vercel project's **Root Directory** to `frontend/`. The backend is a separate Laravel deployment and is not hosted by this frontend project.
+3. Use Vercel's Vite framework detection, with `npm install` as the install command, `npm run build` as the build command, and `dist` as the output directory.
+4. Add `VITE_API_BASE_URL` in the Vercel project's Environment Variables for Production and Preview. Set it to the full Laravel API base URL, including `/api` (for example, `https://api.example.com/api`). This is a public frontend setting, not a secret.
+5. Set `VITE_ENABLE_DEMO_DATA=false`. Demo fallbacks are disabled in production builds regardless, but should also remain off in Vercel settings.
+6. Deploy. The rewrite in [`frontend/vercel.json`](frontend/vercel.json) serves the SPA entry point for direct links and browser refreshes, including `/am/...` routes.
+
+Vite embeds `VITE_*` values at build time; redeploy after changing them. Configure the Laravel API's CORS and Sanctum settings for the production domain and any Vercel preview domains that need to use the API. For cross-origin admin sign-in, ensure the backend's cookie and stateful-domain settings support the deployed frontend origin.
+
+Vercel builds with the Node.js versions supported by the installed Vite release (`^20.19.0` or `>=22.12.0`), as declared in `frontend/package.json`. To build locally, run `npm run build` from `frontend/`; Vite writes the static bundle to `frontend/dist/`.
 
 The Laravel application and its database are deployed and operated separately from the static frontend. Run database migrations as part of the backend deployment process.
