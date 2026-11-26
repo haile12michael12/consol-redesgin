@@ -106,6 +106,9 @@ const PagesAdminPage = lazy(() =>
 const SettingsAdminPage = lazy(() =>
   import('@/pages/admin/SettingsAdminPage').then((m) => ({ default: m.SettingsAdminPage })),
 )
+const TranslationsAdminPage = lazy(() =>
+  import('@/pages/admin/TranslationsAdminPage').then((m) => ({ default: m.TranslationsAdminPage })),
+)
 const ServicesAdminPage = lazy(() =>
   import('@/pages/admin/ServicesAdminPage').then((m) => ({ default: m.ServicesAdminPage })),
 )
@@ -205,6 +208,7 @@ export default function AppRoutes() {
         <Route index element={<SuspenseBoundary><DashboardPage /></SuspenseBoundary>} />
         <Route path="dashboard" element={<SuspenseBoundary><DashboardPage /></SuspenseBoundary>} />
         <Route path="pages" element={<SuspenseBoundary><PagesAdminPage /></SuspenseBoundary>} />
+        <Route path="translations" element={<SuspenseBoundary><TranslationsAdminPage /></SuspenseBoundary>} />
         <Route path="company-profile" element={<Navigate to="/admin/settings" replace />} />
         <Route
           path="services"

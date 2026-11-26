@@ -13,6 +13,7 @@ import {
   Inbox,
   KeyRound,
   LayoutDashboard,
+  Languages,
   Menu,
   Newspaper,
   Search,
@@ -35,6 +36,7 @@ import { normaliseError } from '@/services/api'
 
 const icons = {
   LayoutDashboard,
+  Languages,
   Files,
   CalendarDays,
   Briefcase,
@@ -76,6 +78,7 @@ function SidebarLink({ item, onNavigate }) {
 const permissionByPath = {
   '/admin/dashboard': 'analytics.view',
   '/admin/pages': 'pages.manage',
+  '/admin/translations': 'translations.manage',
   '/admin/services': 'services.manage',
   '/admin/projects': 'projects.manage',
   '/admin/training': 'training.manage',

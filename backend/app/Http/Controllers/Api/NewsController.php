@@ -33,7 +33,7 @@ class NewsController extends Controller
         ]);
 
         $articles = $this->publicArticles()
-            ->with('category')
+            ->with(['category', 'translations' => fn ($query) => $query->where('locale', 'am')])
             ->when($filters['q'] ?? null, function (Builder $query, string $term) {
                 $query->where(function (Builder $query) use ($term) {
                     $query->where('title', 'like', '%'.$term.'%')
@@ -53,7 +53,7 @@ class NewsController extends Controller
             ->orderByDesc('published_at')
             ->orderByDesc('id')
             ->paginate($filters['per_page'] ?? 9)
-            ->through(fn (NewsArticle $article) => $this->presentArticle($article));
+            ->through(fn (NewsArticle $article) => $this->presentArticle($article, false, $this->locale($request)));
 
         return response()->json($articles);
     }
@@ -71,12 +71,13 @@ class NewsController extends Controller
         return response()->json($categories);
     }
 
-    public function showArticle(string $slug): JsonResponse
+    public function showArticle(Request $request, string $slug): JsonResponse
     {
         $article = $this->publicArticles()
             ->where('slug', $slug)
-            ->with('category')
+            ->with(['category', 'translations' => fn ($query) => $query->where('locale', 'am')])
             ->firstOrFail();
+        $locale = $this->locale($request);
 
         $related = $this->publicArticles()
             ->where('id', '<>', $article->id)
@@ -84,14 +85,14 @@ class NewsController extends Controller
                 'news_category_id',
                 $article->news_category_id,
             ))
-            ->with('category')
+            ->with(['category', 'translations' => fn ($query) => $query->where('locale', 'am')])
             ->orderByDesc('published_at')
             ->limit(3)
             ->get()
-            ->map(fn (NewsArticle $item) => $this->presentArticle($item));
+            ->map(fn (NewsArticle $item) => $this->presentArticle($item, false, $locale));
 
         return response()->json([
-            ...$this->presentArticle($article),
+            ...$this->presentArticle($article, false, $locale),
             'relatedArticles' => $related,
         ]);
     }
@@ -575,16 +576,16 @@ class NewsController extends Controller
         ]);
     }
 
-    private function presentArticle(NewsArticle $article, bool $admin = false): array
+    private function presentArticle(NewsArticle $article, bool $admin = false, string $locale = 'en'): array
     {
         $article->loadMissing('category');
 
         return [
             'id' => $article->id,
             'slug' => $article->slug,
-            'title' => $article->title,
-            'excerpt' => $article->excerpt,
-            'body' => preg_split('/\R{2,}/', trim($article->body), -1, PREG_SPLIT_NO_EMPTY),
+            'title' => $article->localizedValue('title', $locale),
+            'excerpt' => $article->localizedValue('excerpt', $locale),
+            'body' => preg_split('/\R{2,}/', trim($article->localizedValue('body', $locale)), -1, PREG_SPLIT_NO_EMPTY),
             'date' => $article->published_at?->toDateString(),
             'publishedAt' => $article->published_at?->toIso8601String(),
             'category' => $article->category?->slug,
@@ -594,8 +595,8 @@ class NewsController extends Controller
             'image' => $article->cover_image_path ? route('api.news-images.show', $article) : null,
             'imageAlt' => $article->cover_image_alt,
             'status' => $admin ? $article->status : null,
-            'seoTitle' => $article->seo_title,
-            'seoDescription' => $article->seo_description,
+            'seoTitle' => $article->localizedValue('seo_title', $locale),
+            'seoDescription' => $article->localizedValue('seo_description', $locale),
         ];
     }
 
@@ -648,6 +649,11 @@ class NewsController extends Controller
             'sortOrder' => $category->sort_order,
             'articleCount' => $category->article_count ?? $category->articles_count ?? null,
         ];
+    }
+
+    private function locale(Request $request): string
+    {
+        return $request->getPreferredLanguage(['en', 'am']) === 'am' ? 'am' : 'en';
     }
 
     private function deleteStoredFiles(array $paths): void

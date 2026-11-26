@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { Logo } from '@/components/common/Logo'
 import { Button } from '@/components/ui/button'
-import { useT } from '@/i18n/LanguageProvider'
+import { useLanguage, useT } from '@/i18n/LanguageProvider'
 import { company, contact } from '@/lib/site'
 import { primaryNav } from '@/lib/navigation'
 import { cn } from '@/lib/utils'
@@ -176,6 +176,7 @@ function DesktopDropdown({ item, openKey, setOpenKey, pathname, search, hash }) 
 
 export function SiteHeader() {
   const t = useT()
+  const { isAmharic } = useLanguage()
   const location = useLocation()
   const reduceMotion = useReducedMotion()
   const [openKey, setOpenKey] = useState(null)
@@ -297,7 +298,10 @@ export function SiteHeader() {
         <div className="shell flex h-[4.5rem] items-center justify-between gap-6 lg:h-20">
           <Logo />
 
-          <nav aria-label={t('nav.mainNavigation')} className="hidden items-center xl:flex">
+          <nav
+            aria-label={t('nav.mainNavigation')}
+            className={cn('hidden items-center', isAmharic ? '2xl:flex' : 'xl:flex')}
+          >
             {primaryNav.map((item) =>
               item.columns ? (
                 <div key={item.labelKey} data-nav-dropdown>
@@ -346,7 +350,10 @@ export function SiteHeader() {
               aria-expanded={mobileOpen}
               aria-controls="mobile-navigation"
               aria-label={t('nav.openMenu')}
-              className="grid size-11 place-items-center border border-line-strong text-navy transition-colors hover:border-navy hover:bg-navy hover:text-white xl:hidden"
+              className={cn(
+                'grid size-11 place-items-center border border-line-strong text-navy transition-colors hover:border-navy hover:bg-navy hover:text-white',
+                isAmharic ? '2xl:hidden' : 'xl:hidden',
+              )}
             >
               <Menu className="size-5" aria-hidden="true" />
             </button>
@@ -357,7 +364,8 @@ export function SiteHeader() {
       {/* Mobile drawer */}
       <div
         className={cn(
-          'fixed inset-0 z-50 xl:hidden',
+          'fixed inset-0 z-50',
+          isAmharic ? '2xl:hidden' : 'xl:hidden',
           mobileOpen ? 'pointer-events-auto' : 'pointer-events-none',
         )}
         aria-hidden={!mobileOpen}

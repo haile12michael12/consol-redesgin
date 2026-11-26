@@ -11,25 +11,29 @@ use Illuminate\Validation\Rule;
 
 class ServiceController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         $services = Service::query()
             ->where('status', ContentStatus::Published->value)
+            ->with(['translations' => fn ($query) => $query->where('locale', 'am')])
             ->orderBy('sort_order')
             ->orderBy('title')
             ->get();
 
-        return response()->json($services->map(fn (Service $service) => $this->present($service)));
+        $locale = $this->locale($request);
+
+        return response()->json($services->map(fn (Service $service) => $this->present($service, $locale)));
     }
 
-    public function show(string $slug): JsonResponse
+    public function show(Request $request, string $slug): JsonResponse
     {
         $service = Service::query()
             ->where('slug', $slug)
             ->where('status', ContentStatus::Published->value)
+            ->with(['translations' => fn ($query) => $query->where('locale', 'am')])
             ->firstOrFail();
 
-        return response()->json($this->present($service));
+        return response()->json($this->present($service, $this->locale($request)));
     }
 
     public function adminIndex(): JsonResponse
@@ -104,24 +108,29 @@ class ServiceController extends Controller
         ]);
     }
 
-    private function present(Service $service): array
+    private function present(Service $service, string $locale = 'en'): array
     {
         return [
             'id' => $service->id,
             'slug' => $service->slug,
-            'title' => $service->title,
+            'title' => $service->localizedValue('title', $locale),
             'category' => $service->category,
-            'summary' => $service->summary,
-            'description' => $service->description,
+            'summary' => $service->localizedValue('summary', $locale),
+            'description' => $service->localizedValue('description', $locale),
             'image' => $service->image,
             'imageAlt' => $service->image_alt,
-            'scope' => $service->scope ?? [],
-            'benefits' => $service->benefits ?? [],
-            'deliveryApproach' => $service->delivery_approach,
-            'relatedProjects' => $service->related_projects ?? [],
-            'faqs' => $service->faqs ?? [],
+            'scope' => $service->localizedValue('scope', $locale) ?? [],
+            'benefits' => $service->localizedValue('benefits', $locale) ?? [],
+            'deliveryApproach' => $service->localizedValue('delivery_approach', $locale),
+            'relatedProjects' => $service->localizedValue('related_projects', $locale) ?? [],
+            'faqs' => $service->localizedValue('faqs', $locale) ?? [],
             'status' => $service->status,
             'order' => $service->sort_order,
         ];
+    }
+
+    private function locale(Request $request): string
+    {
+        return $request->getPreferredLanguage(['en', 'am']) === 'am' ? 'am' : 'en';
     }
 }

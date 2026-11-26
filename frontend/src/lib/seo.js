@@ -1,5 +1,7 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
+import { getLocalizedPath } from '@/lib/localizedRoutes'
+import { useLanguage } from '@/i18n/LanguageProvider'
 
 const SITE_NAME = 'Construction Solutions PLC'
 const BASE_URL = 'https://www.constructionsolutionsplc.com'
@@ -25,6 +27,25 @@ function setCanonical(href) {
   link.href = href
 }
 
+function setAlternateLanguages(path) {
+  const alternatives = {
+    en: `${BASE_URL}${path}`,
+    am: `${BASE_URL}${getLocalizedPath(path, 'am')}`,
+    'x-default': `${BASE_URL}${path}`,
+  }
+
+  for (const [language, href] of Object.entries(alternatives)) {
+    let link = document.head.querySelector(`link[rel="alternate"][hreflang="${language}"]`)
+    if (!link) {
+      link = document.createElement('link')
+      link.rel = 'alternate'
+      link.hreflang = language
+      document.head.appendChild(link)
+    }
+    link.href = href
+  }
+}
+
 function setJsonLd(id, data) {
   let script = document.head.querySelector(`script[data-seo="${id}"]`)
   if (!data) {
@@ -45,7 +66,10 @@ function setJsonLd(id, data) {
  */
 export function usePageMeta({ title, description, path, image, jsonLd, noindex = false }) {
   const location = useLocation()
-  const url = `${BASE_URL}${path ?? location.pathname}`
+  const { lang } = useLanguage()
+  const pagePath = path ?? location.pathname
+  const localizedPath = getLocalizedPath(pagePath, lang)
+  const url = `${BASE_URL}${localizedPath}`
 
   useEffect(() => {
     const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} | CONSOL`
@@ -55,14 +79,16 @@ export function usePageMeta({ title, description, path, image, jsonLd, noindex =
     setMeta('property', 'og:description', description)
     setMeta('property', 'og:url', url)
     setMeta('property', 'og:type', 'website')
+    setMeta('property', 'og:locale', lang === 'am' ? 'am_ET' : 'en_US')
     setMeta('name', 'robots', noindex ? 'noindex, nofollow' : 'index, follow')
     if (image) {
       setMeta('property', 'og:image', image)
       setMeta('name', 'twitter:image', image)
     }
     setCanonical(url)
+    setAlternateLanguages(pagePath)
     setJsonLd('page', jsonLd ?? null)
-  }, [title, description, url, image, jsonLd, noindex])
+  }, [title, description, url, pagePath, image, jsonLd, noindex, lang])
 }
 
 export function breadcrumbJsonLd(items) {

@@ -331,6 +331,11 @@ describe('navigation', () => {
     const nav = await screen.findByRole('navigation', { name: /ዋና ምናሌ/i })
     expect(within(nav).getByRole('link', { name: 'ፕሮጀክቶች' })).toBeInTheDocument()
     expect(document.documentElement.lang).toBe('am')
+    expect(window.location.pathname).toBe('/am')
+    expect(document.head.querySelector('link[rel="alternate"][hreflang="am"]')).toHaveAttribute(
+      'href',
+      'https://www.constructionsolutionsplc.com/am',
+    )
   })
 
   it('links the training menu to confirmed schedules and certificate verification', async () => {

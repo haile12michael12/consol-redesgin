@@ -33,7 +33,7 @@ class ProjectController extends Controller
 
         $projects = Project::query()
             ->where('status', ContentStatus::Published->value)
-            ->with(['categories', 'images'])
+            ->with(['categories', 'images', 'translations' => fn ($query) => $query->where('locale', 'am')])
             ->when($filters['q'] ?? $filters['search'] ?? null, function (Builder $query, string $term) {
                 $query->where(function (Builder $query) use ($term) {
                     $query->where('title', 'like', '%'.$term.'%')
@@ -54,7 +54,7 @@ class ProjectController extends Controller
             ->orderByDesc('year')
             ->orderBy('title')
             ->paginate($filters['per_page'] ?? 9)
-            ->through(fn (Project $project) => $this->present($project));
+            ->through(fn (Project $project) => $this->present($project, false, $this->locale($request)));
 
         return response()->json($projects);
     }
@@ -75,13 +75,14 @@ class ProjectController extends Controller
         return response()->json($categories);
     }
 
-    public function show(string $slug): JsonResponse
+    public function show(Request $request, string $slug): JsonResponse
     {
         $project = Project::query()
             ->where('slug', $slug)
             ->where('status', ContentStatus::Published->value)
-            ->with(['categories', 'images'])
+            ->with(['categories', 'images', 'translations' => fn ($query) => $query->where('locale', 'am')])
             ->firstOrFail();
+        $locale = $this->locale($request);
 
         $related = Project::query()
             ->where('status', ContentStatus::Published->value)
@@ -90,15 +91,15 @@ class ProjectController extends Controller
                 'project_categories.id',
                 $project->categories->modelKeys(),
             ))
-            ->with(['categories', 'images'])
+            ->with(['categories', 'images', 'translations' => fn ($query) => $query->where('locale', 'am')])
             ->orderByDesc('featured')
             ->orderByDesc('year')
             ->limit(3)
             ->get()
-            ->map(fn (Project $item) => $this->present($item));
+            ->map(fn (Project $item) => $this->present($item, false, $locale));
 
         return response()->json([
-            ...$this->present($project),
+            ...$this->present($project, false, $locale),
             'relatedProjects' => $related,
         ]);
     }
@@ -307,7 +308,7 @@ class ProjectController extends Controller
         return $saved;
     }
 
-    private function present(Project $project, bool $admin = false): array
+    private function present(Project $project, bool $admin = false, string $locale = 'en'): array
     {
         $project->loadMissing(['categories', 'images']);
         $images = $project->images->map(fn (ProjectImage $image) => [
@@ -322,9 +323,9 @@ class ProjectController extends Controller
         return [
             'id' => $project->id,
             'slug' => $project->slug,
-            'title' => $project->title,
-            'summary' => $project->summary,
-            'overview' => $project->overview,
+            'title' => $project->localizedValue('title', $locale),
+            'summary' => $project->localizedValue('summary', $locale),
+            'overview' => $project->localizedValue('overview', $locale),
             'client' => $admin || $project->client_approved ? $project->client : null,
             'clientApproved' => $admin ? $project->client_approved : null,
             'location' => $admin || $project->location_approved ? $project->location : null,
@@ -336,17 +337,22 @@ class ProjectController extends Controller
                 'slug' => $category->slug,
                 'name' => $category->name,
             ]),
-            'scope' => $project->scope ?? [],
-            'services' => $project->services ?? [],
-            'outcomes' => $project->outcomes ?? [],
+            'scope' => $project->localizedValue('scope', $locale) ?? [],
+            'services' => $project->localizedValue('services', $locale) ?? [],
+            'outcomes' => $project->localizedValue('outcomes', $locale) ?? [],
             'images' => $images,
             'coverImage' => $cover['url'] ?? null,
             'coverImageAlt' => $cover['alt'] ?? null,
             'featured' => $project->featured,
             'status' => $admin ? $project->status : null,
-            'seoTitle' => $project->seo_title,
-            'seoDescription' => $project->seo_description,
+            'seoTitle' => $project->localizedValue('seo_title', $locale),
+            'seoDescription' => $project->localizedValue('seo_description', $locale),
         ];
+    }
+
+    private function locale(Request $request): string
+    {
+        return $request->getPreferredLanguage(['en', 'am']) === 'am' ? 'am' : 'en';
     }
 
     private function presentCategory(ProjectCategory $category): array

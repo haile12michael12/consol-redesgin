@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AssistantController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CertificateController;
 use App\Http\Controllers\Api\CourseController;
+use App\Http\Controllers\Api\ContentTranslationController;
 use App\Http\Controllers\Api\InquiryController;
 use App\Http\Controllers\Api\MediaController;
 use App\Http\Controllers\Api\NewsController;
@@ -45,6 +46,14 @@ Route::middleware(['auth:sanctum', 'admin', 'permission:services.manage'])->pref
     Route::put('/{service}', [ServiceController::class, 'update']);
     Route::delete('/{service}', [ServiceController::class, 'destroy']);
 });
+
+Route::middleware(['auth:sanctum', 'admin', 'permission:translations.manage,translations.approve'])
+    ->prefix('admin/translations')
+    ->group(function () {
+        Route::get('/', [ContentTranslationController::class, 'index']);
+        Route::middleware('permission:translations.manage')->put('/{type}/{record}', [ContentTranslationController::class, 'update']);
+        Route::middleware('permission:translations.approve')->post('/{type}/{record}/approve', [ContentTranslationController::class, 'approve']);
+    });
 
 Route::middleware(['auth:sanctum', 'admin', 'permission:pages.manage'])->prefix('admin/pages')->group(function () {
     Route::get('/', [PageController::class, 'adminIndex']);

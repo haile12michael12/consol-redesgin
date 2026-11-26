@@ -25,6 +25,12 @@ export const api = axios.create({
 })
 
 api.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const isAmharicPath = window.location.pathname === '/am'
+      || window.location.pathname.startsWith('/am/')
+    config.headers['Accept-Language'] = isAmharicPath ? 'am' : 'en'
+  }
+
   // Laravel Sanctum CSRF cookie pattern (SPA authentication).
   if (typeof document !== 'undefined') {
     const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/)

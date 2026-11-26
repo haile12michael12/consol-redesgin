@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasTranslations;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class NewsArticle extends Model
 {
+    use HasTranslations;
+
     protected $fillable = [
         'news_category_id',
         'slug',

@@ -33,6 +33,7 @@ class CourseController extends Controller
         $courses = Course::query()
             ->where('status', ContentStatus::Published->value)
             ->with([
+                'translations' => fn ($query) => $query->where('locale', 'am'),
                 'category',
                 'instructors' => fn ($query) => $query->where('status', ContentStatus::Published->value),
                 'schedules' => fn ($query) => $query
@@ -54,7 +55,7 @@ class CourseController extends Controller
             ->orderByDesc('featured')
             ->orderBy('title')
             ->paginate($filters['per_page'] ?? 9)
-            ->through(fn (Course $course) => $this->presentCourse($course));
+            ->through(fn (Course $course) => $this->presentCourse($course, false, $this->locale($request)));
 
         return response()->json($courses);
     }
@@ -75,12 +76,13 @@ class CourseController extends Controller
         );
     }
 
-    public function show(string $slug): JsonResponse
+    public function show(Request $request, string $slug): JsonResponse
     {
         $course = Course::query()
             ->where('slug', $slug)
             ->where('status', ContentStatus::Published->value)
             ->with([
+                'translations' => fn ($query) => $query->where('locale', 'am'),
                 'category',
                 'instructors' => fn ($query) => $query->where('status', ContentStatus::Published->value),
                 'schedules' => fn ($query) => $query
@@ -88,6 +90,7 @@ class CourseController extends Controller
                     ->where('starts_at', '>', now()),
             ])
             ->firstOrFail();
+        $locale = $this->locale($request);
 
         $related = Course::query()
             ->where('course_category_id', $course->course_category_id)
@@ -96,15 +99,15 @@ class CourseController extends Controller
             ->with(['category', 'instructors' => fn ($query) => $query->where(
                 'status',
                 ContentStatus::Published->value,
-            )])
+            ), 'translations' => fn ($query) => $query->where('locale', 'am')])
             ->orderByDesc('featured')
             ->orderBy('title')
             ->limit(3)
             ->get()
-            ->map(fn (Course $item) => $this->presentCourse($item));
+            ->map(fn (Course $item) => $this->presentCourse($item, false, $locale));
 
         return response()->json([
-            ...$this->presentCourse($course),
+            ...$this->presentCourse($course, false, $locale),
             'relatedCourses' => $related,
         ]);
     }
@@ -455,7 +458,7 @@ class CourseController extends Controller
         ]);
     }
 
-    private function presentCourse(Course $course, bool $admin = false): array
+    private function presentCourse(Course $course, bool $admin = false, string $locale = 'en'): array
     {
         $course->loadMissing(['category', 'instructors', 'schedules']);
         $credential = $course->credential_verified && $course->credential_name && $course->credential_issuer
@@ -468,26 +471,26 @@ class CourseController extends Controller
         return [
             'id' => $course->id,
             'slug' => $course->slug,
-            'title' => $course->title,
-            'summary' => $course->summary,
-            'description' => $course->description,
+            'title' => $course->localizedValue('title', $locale),
+            'summary' => $course->localizedValue('summary', $locale),
+            'description' => $course->localizedValue('description', $locale),
             'category' => $course->category ? $this->presentCategory($course->category) : null,
             'image' => $course->image_path ? route('api.course-images.show', $course) : null,
             'imageAlt' => $course->image_alt,
-            'learningObjectives' => $course->learning_objectives ?? [],
-            'curriculum' => $course->curriculum ?? [],
+            'learningObjectives' => $course->localizedValue('learning_objectives', $locale) ?? [],
+            'curriculum' => $course->localizedValue('curriculum', $locale) ?? [],
             'duration' => $course->duration,
             'deliveryMethod' => $course->delivery_method,
-            'requirements' => $course->requirements ?? [],
-            'faqs' => $course->faqs ?? [],
+            'requirements' => $course->localizedValue('requirements', $locale) ?? [],
+            'faqs' => $course->localizedValue('faqs', $locale) ?? [],
             'credential' => $credential,
             'credentialVerified' => $admin ? $course->credential_verified : null,
             'certificateSupported' => $course->certificate_supported,
             'registrationEnabled' => $course->status === ContentStatus::Published->value && $course->registration_enabled,
             'featured' => $course->featured,
             'status' => $course->status,
-            'seoTitle' => $course->seo_title,
-            'seoDescription' => $course->seo_description,
+            'seoTitle' => $course->localizedValue('seo_title', $locale),
+            'seoDescription' => $course->localizedValue('seo_description', $locale),
             'instructors' => $course->instructors
                 ->when(! $admin, fn ($instructors) => $instructors->where('status', ContentStatus::Published->value))
                 ->map(fn (Instructor $instructor) => $this->presentInstructor($instructor)),
@@ -499,6 +502,11 @@ class CourseController extends Controller
             'createdAt' => $course->created_at?->toISOString(),
             'updatedAt' => $course->updated_at?->toISOString(),
         ];
+    }
+
+    private function locale(Request $request): string
+    {
+        return $request->getPreferredLanguage(['en', 'am']) === 'am' ? 'am' : 'en';
     }
 
     private function presentCategory(CourseCategory $category, bool $admin = false): array

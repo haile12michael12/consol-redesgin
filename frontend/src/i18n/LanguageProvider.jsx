@@ -5,18 +5,23 @@ import am from './am'
 const dictionaries = { en, am }
 const STORAGE_KEY = 'consol.lang'
 const supported = ['en', 'am']
+const AMHARIC_PREFIX = '/am'
 
 const LanguageContext = createContext(null)
 
 function detectInitial() {
   if (typeof window === 'undefined') return 'en'
+  if (
+    window.location.pathname === AMHARIC_PREFIX
+    || window.location.pathname.startsWith(`${AMHARIC_PREFIX}/`)
+  ) return 'am'
   const stored = window.localStorage.getItem(STORAGE_KEY)
   if (stored && supported.includes(stored)) return stored
   const browser = window.navigator.language?.slice(0, 2)
   return browser === 'am' ? 'am' : 'en'
 }
 
-export function LanguageProvider({ children }) {
+export function LanguageProvider({ children, onLanguageChange }) {
   const [lang, setLang] = useState(detectInitial)
 
   useEffect(() => {
@@ -39,8 +44,10 @@ export function LanguageProvider({ children }) {
   )
 
   const setLanguage = useCallback((next) => {
-    if (supported.includes(next)) setLang(next)
-  }, [])
+    if (!supported.includes(next) || next === lang) return
+    setLang(next)
+    onLanguageChange?.(next)
+  }, [lang, onLanguageChange])
 
   const value = useMemo(
     () => ({ lang, locale: lang, setLanguage, t, isAmharic: lang === 'am' }),
