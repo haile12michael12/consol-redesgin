@@ -18,6 +18,13 @@ const emptyProject = {
   slug: '',
   summary: '',
   overview: '',
+  projectType: '',
+  projectDate: '',
+  context: '',
+  objectives: [],
+  challenge: '',
+  approach: '',
+  milestones: [],
   client: '',
   clientApproved: false,
   location: '',
@@ -46,6 +53,11 @@ function makeProjectFormData(values, uploads, removeImageIds) {
     slug: values.slug.trim(),
     summary: values.summary.trim(),
     overview: values.overview.trim(),
+    project_type: values.projectType.trim(),
+    project_date: values.projectDate,
+    context: values.context.trim(),
+    challenge: values.challenge.trim(),
+    approach: values.approach.trim(),
     client: values.client.trim(),
     client_approved: values.clientApproved ? '1' : '0',
     location: values.location.trim(),
@@ -60,8 +72,16 @@ function makeProjectFormData(values, uploads, removeImageIds) {
   Object.entries(fields).forEach(([key, value]) => formData.append(key, value))
   values.categories.forEach((id) => formData.append('categories[]', String(id)))
   lines(values.scope).forEach((value) => formData.append('scope[]', value))
+  lines(values.objectives).forEach((value) => formData.append('objectives[]', value))
   lines(values.services).forEach((value) => formData.append('services[]', value))
   lines(values.outcomes).forEach((value) => formData.append('outcomes[]', value))
+  lines(values.milestones).forEach((line, index) => {
+    const [date = '', title = '', ...description] = line.split('|').map((part) => part.trim())
+    if (!title) return
+    formData.append(`milestones[${index}][date]`, date)
+    formData.append(`milestones[${index}][title]`, title)
+    formData.append(`milestones[${index}][description]`, description.join('|'))
+  })
   uploads.forEach(({ file, alt }, index) => {
     formData.append('images[]', file)
     if (alt.trim()) formData.append(`image_alts[${index}]`, alt.trim())
@@ -79,8 +99,16 @@ function projectValues(project) {
       typeof category === 'object' ? category.id : category
     )),
     scope: asLines(project.scope),
+    objectives: asLines(project.objectives),
     services: asLines(project.services),
     outcomes: asLines(project.outcomes),
+    milestones: Array.isArray(project.milestones)
+      ? project.milestones.map((milestone) => [
+          milestone.date ?? '',
+          milestone.title ?? '',
+          milestone.description ?? '',
+        ].join(' | ')).join('\n')
+      : project.milestones ?? '',
     images: project.images ?? [],
     clientApproved: Boolean(project.clientApproved),
     locationApproved: Boolean(project.locationApproved),
@@ -181,6 +209,12 @@ function ProjectForm({ project, categories, pending, error, onCancel, onSave }) 
         <Field label="Year">
           <Input type="number" min="1900" max="2100" value={values.year ?? ''} onChange={(event) => update('year', event.target.value)} />
         </Field>
+        <Field label="Project type">
+          <Input maxLength={100} value={values.projectType ?? ''} onChange={(event) => update('projectType', event.target.value)} placeholder="Only if documented" />
+        </Field>
+        <Field label="Project date">
+          <Input type="date" value={values.projectDate ?? ''} onChange={(event) => update('projectDate', event.target.value)} />
+        </Field>
         <Field label="Project duration">
           <Input maxLength={255} value={values.duration ?? ''} onChange={(event) => update('duration', event.target.value)} placeholder="Only if documented" />
         </Field>
@@ -203,6 +237,18 @@ function ProjectForm({ project, categories, pending, error, onCancel, onSave }) 
         </Field>
         <Field label="Project overview" className="sm:col-span-2">
           <Textarea required maxLength={20000} rows={6} value={values.overview} onChange={(event) => update('overview', event.target.value)} />
+        </Field>
+        <Field label="Project context and objectives" className="sm:col-span-2">
+          <Textarea maxLength={20000} rows={4} value={values.context ?? ''} onChange={(event) => update('context', event.target.value)} />
+        </Field>
+        <Field label="Objectives (one verified objective per line)" className="sm:col-span-2">
+          <Textarea rows={3} value={values.objectives} onChange={(event) => update('objectives', event.target.value)} />
+        </Field>
+        <Field label="Client challenge" className="sm:col-span-2">
+          <Textarea maxLength={20000} rows={4} value={values.challenge ?? ''} onChange={(event) => update('challenge', event.target.value)} />
+        </Field>
+        <Field label="CONSOL's approach and methodology" className="sm:col-span-2">
+          <Textarea maxLength={20000} rows={5} value={values.approach ?? ''} onChange={(event) => update('approach', event.target.value)} />
         </Field>
         <fieldset className="sm:col-span-2">
           <legend className="text-[0.75rem] font-semibold text-navy">Categories</legend>
@@ -241,6 +287,9 @@ function ProjectForm({ project, categories, pending, error, onCancel, onSave }) 
         </Field>
         <Field label="Documented outcomes (one approved item per line)" className="sm:col-span-2">
           <Textarea rows={4} value={values.outcomes} onChange={(event) => update('outcomes', event.target.value)} />
+        </Field>
+        <Field label="Project milestones (one per line: date | milestone | optional notes)" className="sm:col-span-2">
+          <Textarea rows={4} value={values.milestones} onChange={(event) => update('milestones', event.target.value)} placeholder="2024-06 | Inception | Approved inception meeting" />
         </Field>
         <Field label="SEO title" className="sm:col-span-2">
           <Input maxLength={255} value={values.seoTitle ?? ''} onChange={(event) => update('seoTitle', event.target.value)} />

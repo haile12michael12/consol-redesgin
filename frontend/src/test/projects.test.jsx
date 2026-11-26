@@ -14,6 +14,7 @@ vi.mock('@/services/projectsApi', () => ({
     list: vi.fn(),
     show: vi.fn(),
     categories: vi.fn(),
+    types: vi.fn(),
   },
   projectsAdminApi: {
     list: vi.fn(),
@@ -30,6 +31,7 @@ vi.mock('@/services/projectsApi', () => ({
     list: (params) => ['projects', 'list', params],
     detail: (slug) => ['projects', 'detail', slug],
     categories: ['projects', 'categories'],
+    types: ['projects', 'types'],
   },
 }))
 
@@ -41,6 +43,13 @@ const project = {
   overview: 'Approved project overview.',
   client: null,
   location: null,
+  projectType: null,
+  projectDate: null,
+  context: null,
+  objectives: [],
+  challenge: null,
+  approach: null,
+  milestones: [],
   duration: null,
   year: 2022,
   categories: [{ id: 3, slug: 'research', name: 'Research' }],
@@ -72,6 +81,7 @@ function renderPage(element, initialEntry = '/') {
 
 beforeEach(() => {
   vi.clearAllMocks()
+  projectsApi.types.mockResolvedValue({ data: [] })
 })
 
 describe('Projects module', () => {
@@ -87,11 +97,40 @@ describe('Projects module', () => {
     projectsApi.categories.mockResolvedValue({
       data: [{ id: 3, slug: 'research', name: 'Research' }],
     })
+    projectsApi.types.mockResolvedValue({
+      data: [{ value: 'Institutional consultancy', label: 'Institutional consultancy' }],
+    })
     renderPage(<ProjectsPage />)
 
     expect(await screen.findByRole('heading', { name: project.title, level: 2 })).toBeInTheDocument()
     expect(await screen.findByRole('button', { name: 'Research' })).toBeInTheDocument()
+    expect(await screen.findByRole('option', { name: 'Institutional consultancy' })).toBeInTheDocument()
     expect(projectsApi.list).toHaveBeenCalledWith(expect.objectContaining({ featured: 1 }))
+  })
+
+  it('filters published projects by project type', async () => {
+    const user = userEvent.setup()
+    projectsApi.list.mockImplementation(async (params = {}) => ({
+      data: {
+        data: params.project_type ? [project] : [],
+        current_page: 1,
+        last_page: 1,
+        total: params.project_type ? 1 : 0,
+      },
+    }))
+    projectsApi.categories.mockResolvedValue({ data: [] })
+    projectsApi.types.mockResolvedValue({
+      data: [{ value: 'Institutional consultancy', label: 'Institutional consultancy' }],
+    })
+    renderPage(<ProjectsPage />)
+
+    const typeFilter = await screen.findByRole('combobox', { name: 'Project type' })
+    await screen.findByRole('option', { name: 'Institutional consultancy' })
+    await user.selectOptions(typeFilter, 'Institutional consultancy')
+
+    await waitFor(() => expect(projectsApi.list).toHaveBeenCalledWith(expect.objectContaining({
+      project_type: 'Institutional consultancy',
+    })))
   })
 
   it('loads published project details and marks generic imagery as illustrative', async () => {
@@ -104,8 +143,39 @@ describe('Projects module', () => {
     )
 
     expect(await screen.findByRole('heading', { level: 1, name: project.title })).toBeInTheDocument()
-    expect(screen.getByText('Illustrative imagery is shown because no project-specific photograph has been provided.')).toBeInTheDocument()
-    expect(screen.getByText('No approved project outcomes have been provided for publication.')).toBeInTheDocument()
+    expect(screen.getByText('Illustrative image')).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Project gallery' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Documented outcomes' })).not.toBeInTheDocument()
+  })
+
+  it('renders only the case-study sections backed by published project data', async () => {
+    projectsApi.show.mockResolvedValue({
+      data: {
+        ...project,
+        context: 'Verified project context.',
+        objectives: ['Verified objective.'],
+        challenge: 'Documented client challenge.',
+        approach: 'Approved delivery methodology.',
+        milestones: [{ date: '2022-05', title: 'Inception', description: 'Verified milestone.' }],
+        outcomes: ['Documented outcome.'],
+        images: [{ url: '/media/project-cover.jpg', alt: 'Approved project image' }],
+        coverImage: '/media/project-cover.jpg',
+      },
+    })
+    renderPage(
+      <Routes>
+        <Route path="/projects/:slug" element={<ProjectDetailPage />} />
+      </Routes>,
+      `/projects/${project.slug}`,
+    )
+
+    expect(await screen.findByText('Verified project context.')).toBeInTheDocument()
+    expect(screen.getByText('Verified objective.')).toBeInTheDocument()
+    expect(screen.getByText('Documented client challenge.')).toBeInTheDocument()
+    expect(screen.getByText('Approved delivery methodology.')).toBeInTheDocument()
+    expect(screen.getByText('Verified milestone.')).toBeInTheDocument()
+    expect(screen.getByText('Documented outcome.')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Project gallery' })).toBeInTheDocument()
   })
 
   it('allows administrators to create a published project with approved client information', async () => {

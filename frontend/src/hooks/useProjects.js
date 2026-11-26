@@ -27,6 +27,14 @@ export function useProjectCategories() {
   })
 }
 
+export function useProjectTypes() {
+  return useQuery({
+    queryKey: projectsQuery.types,
+    queryFn: async () => (await projectsApi.types()).data,
+    staleTime: 5 * 60 * 1000,
+  })
+}
+
 export function useAdminProjects(params = {}) {
   return useQuery({
     queryKey: ['admin', 'projects', params],

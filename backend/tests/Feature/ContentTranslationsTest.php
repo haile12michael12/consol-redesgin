@@ -90,6 +90,7 @@ class ContentTranslationsTest extends TestCase
             'title' => 'English project',
             'summary' => 'English project summary',
             'overview' => 'English overview',
+            'project_type' => 'research',
             'status' => ContentStatus::Published->value,
         ]);
         $article = NewsArticle::query()->create([
@@ -115,7 +116,17 @@ class ContentTranslationsTest extends TestCase
         ]);
 
         foreach ([
-            [$project, ['title' => 'የፕሮጀክት ርዕስ', 'summary' => 'የፕሮጀክት ማጠቃለያ', 'overview' => 'የፕሮጀክት እይታ']],
+            [$project, [
+                'title' => 'የፕሮጀክት ርዕስ',
+                'summary' => 'የፕሮጀክት ማጠቃለያ',
+                'overview' => 'የፕሮጀክት እይታ',
+                'project_type' => 'የምርምር ፕሮጀክት',
+                'context' => 'የፕሮጀክት አውድ',
+                'objectives' => ['የፕሮጀክት ዓላማ'],
+                'challenge' => 'የደንበኛ ተግዳሮት',
+                'approach' => 'የስራ ዘዴ',
+                'milestones' => [['date' => '2024-01', 'title' => 'መነሻ']],
+            ]],
             [$article, ['title' => 'የዜና ርዕስ', 'excerpt' => 'የዜና ማጠቃለያ', 'body' => 'የዜና ይዘት']],
             [$course, ['title' => 'የኮርስ ርዕስ', 'summary' => 'የኮርስ ማጠቃለያ', 'description' => 'የኮርስ መግለጫ']],
         ] as [$record, $fields]) {
@@ -130,7 +141,16 @@ class ContentTranslationsTest extends TestCase
         $headers = ['Accept-Language' => 'am'];
         $this->getJson('/api/projects/translated-project', $headers)
             ->assertOk()
-            ->assertJsonPath('title', 'የፕሮጀክት ርዕስ');
+            ->assertJsonPath('title', 'የፕሮጀክት ርዕስ')
+            ->assertJsonPath('context', 'የፕሮጀክት አውድ')
+            ->assertJsonPath('objectives.0', 'የፕሮጀክት ዓላማ')
+            ->assertJsonPath('challenge', 'የደንበኛ ተግዳሮት')
+            ->assertJsonPath('approach', 'የስራ ዘዴ')
+            ->assertJsonPath('milestones.0.title', 'መነሻ');
+        $this->getJson('/api/projects/types', $headers)
+            ->assertOk()
+            ->assertJsonPath('0.value', 'research')
+            ->assertJsonPath('0.label', 'የምርምር ፕሮጀክት');
         $this->getJson('/api/news/translated-article', $headers)
             ->assertOk()
             ->assertJsonPath('title', 'የዜና ርዕስ')

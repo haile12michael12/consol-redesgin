@@ -26,6 +26,7 @@ class ProjectController extends Controller
             'q' => ['nullable', 'string', 'max:200'],
             'search' => ['nullable', 'string', 'max:200'],
             'category' => ['nullable', 'string', 'max:255'],
+            'project_type' => ['nullable', 'string', 'max:100'],
             'year' => ['nullable', 'integer', 'min:1900', 'max:2100'],
             'featured' => ['nullable', 'boolean'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:24'],
@@ -45,6 +46,7 @@ class ProjectController extends Controller
                 'categories',
                 fn (Builder $categories) => $categories->where('project_categories.slug', $slug),
             ))
+            ->when($filters['project_type'] ?? null, fn (Builder $query, string $type) => $query->where('project_type', $type))
             ->when($filters['year'] ?? null, fn (Builder $query, int $year) => $query->where('year', $year))
             ->when(
                 isset($filters['featured']),
@@ -57,6 +59,28 @@ class ProjectController extends Controller
             ->through(fn (Project $project) => $this->present($project, false, $this->locale($request)));
 
         return response()->json($projects);
+    }
+
+    public function types(Request $request): JsonResponse
+    {
+        $locale = $this->locale($request);
+
+        return response()->json(
+            Project::query()
+                ->where('status', ContentStatus::Published->value)
+                ->whereNotNull('project_type')
+                ->where('project_type', '<>', '')
+                ->with(['translations' => fn ($query) => $query->where('locale', $locale)])
+                ->get(['id', 'project_type'])
+                ->map(fn (Project $project) => [
+                    'value' => $project->project_type,
+                    'label' => $project->localizedValue('project_type', $locale),
+                ])
+                ->filter(fn (array $type) => $type['label'])
+                ->unique('value')
+                ->sortBy('label')
+                ->values(),
+        );
     }
 
     public function categories(): JsonResponse
@@ -326,6 +350,13 @@ class ProjectController extends Controller
             'title' => $project->localizedValue('title', $locale),
             'summary' => $project->localizedValue('summary', $locale),
             'overview' => $project->localizedValue('overview', $locale),
+            'projectType' => $project->localizedValue('project_type', $locale),
+            'projectDate' => $project->project_date?->toDateString(),
+            'context' => $project->localizedValue('context', $locale),
+            'objectives' => $project->localizedValue('objectives', $locale) ?? [],
+            'challenge' => $project->localizedValue('challenge', $locale),
+            'approach' => $project->localizedValue('approach', $locale),
+            'milestones' => $project->localizedValue('milestones', $locale) ?? [],
             'client' => $admin || $project->client_approved ? $project->client : null,
             'clientApproved' => $admin ? $project->client_approved : null,
             'location' => $admin || $project->location_approved ? $project->location : null,

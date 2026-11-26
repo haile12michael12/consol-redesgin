@@ -22,6 +22,7 @@ class ProjectsApiTest extends TestCase
         $category = $this->createCategory('construction-management');
         $project = $this->createProject('verified-project', ContentStatus::Published->value, [$category], [
             'year' => 2022,
+            'project_type' => 'Institutional consultancy',
             'featured' => true,
             'client' => 'Approved Client',
             'client_approved' => true,
@@ -44,8 +45,48 @@ class ProjectsApiTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1)
             ->assertJsonPath('0.slug', $category->slug);
+        $this->getJson('/api/projects/types')
+            ->assertOk()
+            ->assertExactJson([[
+                'value' => 'Institutional consultancy',
+                'label' => 'Institutional consultancy',
+            ]]);
+
+        $this->getJson('/api/projects?project_type=Institutional%20consultancy')
+            ->assertOk()
+            ->assertJsonPath('data.0.slug', $project->slug)
+            ->assertJsonPath('total', 1);
 
         $this->getJson('/api/projects/draft-project')->assertNotFound();
+    }
+
+    public function test_case_study_fields_are_returned_without_fabricated_fallbacks(): void
+    {
+        $project = $this->createProject('case-study-fields', ContentStatus::Published->value, [], [
+            'project_type' => 'Research',
+            'project_date' => '2024-06-15',
+            'context' => 'Verified project context.',
+            'objectives' => ['Verified objective.'],
+            'challenge' => 'Documented challenge.',
+            'approach' => 'Approved methodology.',
+            'milestones' => [[
+                'date' => '2024-06',
+                'title' => 'Inception',
+                'description' => 'Approved milestone.',
+            ]],
+            'outcomes' => ['Documented outcome.'],
+        ]);
+
+        $this->getJson('/api/projects/'.$project->slug)
+            ->assertOk()
+            ->assertJsonPath('projectType', 'Research')
+            ->assertJsonPath('projectDate', '2024-06-15')
+            ->assertJsonPath('context', 'Verified project context.')
+            ->assertJsonPath('objectives.0', 'Verified objective.')
+            ->assertJsonPath('challenge', 'Documented challenge.')
+            ->assertJsonPath('approach', 'Approved methodology.')
+            ->assertJsonPath('milestones.0.title', 'Inception')
+            ->assertJsonPath('outcomes.0', 'Documented outcome.');
     }
 
     public function test_project_detail_hides_unapproved_client_and_location_and_returns_related_work(): void
@@ -93,6 +134,13 @@ class ProjectsApiTest extends TestCase
             'slug' => 'approved-project',
             'summary' => 'Verified summary.',
             'overview' => 'Verified overview.',
+            'project_type' => 'Verified project type',
+            'project_date' => '2023-08-12',
+            'context' => 'Verified project context',
+            'objectives' => ['Verified objective'],
+            'challenge' => 'Verified challenge',
+            'approach' => 'Verified approach',
+            'milestones' => [['date' => '2023-08', 'title' => 'Verified milestone']],
             'categories' => [$category['id']],
             'scope' => ['Verified scope item'],
             'services' => ['Verified service'],

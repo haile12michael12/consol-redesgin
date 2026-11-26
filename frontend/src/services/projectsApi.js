@@ -4,6 +4,7 @@ export const projectsApi = {
   list: (params = {}) => api.get('/projects', { params }),
   show: (slug) => api.get(`/projects/${slug}`),
   categories: () => api.get('/projects/categories'),
+  types: () => api.get('/projects/types'),
 }
 
 export const projectsAdminApi = {
@@ -25,4 +26,5 @@ export const projectsQuery = {
   list: (params) => ['projects', 'list', params],
   detail: (slug) => ['projects', 'detail', slug],
   categories: ['projects', 'categories'],
+  types: ['projects', 'types'],
 }

@@ -1,13 +1,13 @@
 import { ArrowUpRight, CalendarDays, MapPin } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { PageHero } from '@/components/common/PageHero'
+import { Breadcrumbs } from '@/components/common/Breadcrumbs'
 import { Pagination } from '@/components/common/Pagination'
 import { SearchField } from '@/components/common/SearchField'
 import { CardGridSkeleton, EmptyState, ErrorState } from '@/components/common/StateBlocks'
 import { Button } from '@/components/ui/button'
 import { FilterPill } from '@/components/ui/tag'
-import { useProjectCategories, useProjects } from '@/hooks/useProjects'
+import { useProjectCategories, useProjects, useProjectTypes } from '@/hooks/useProjects'
 import { useT } from '@/i18n/LanguageProvider'
 import { usePageMeta } from '@/lib/seo'
 
@@ -29,10 +29,11 @@ export function ProjectsPage() {
   const urlQuery = params.get('q') ?? ''
   const [search, setSearch] = useState(urlQuery)
   const category = params.get('category') ?? ''
+  const projectType = params.get('project_type') ?? ''
   const page = Math.max(1, Number(params.get('page')) || 1)
 
   usePageMeta({
-    title: 'Projects',
+    title: t('projects.intelligenceTitle'),
     description: 'Explore CONSOL project work published by the company. Client details and project imagery appear only when approved.',
     image: '/media/conference.jpg',
   })
@@ -56,10 +57,12 @@ export function ProjectsPage() {
   const filters = {
     ...(urlQuery ? { q: urlQuery } : {}),
     ...(category ? { category } : {}),
+    ...(projectType ? { project_type: projectType } : {}),
   }
   const projectsQuery = useProjects({ ...filters, page, per_page: PER_PAGE, featured: 0 })
   const featuredQuery = useProjects({ ...filters, per_page: 1, featured: 1 })
   const categoriesQuery = useProjectCategories()
+  const projectTypesQuery = useProjectTypes()
   const projects = projectsQuery.data?.data ?? []
   const featured = featuredQuery.data?.data?.[0]
   const total = projectsQuery.data?.total ?? 0
@@ -82,17 +85,31 @@ export function ProjectsPage() {
 
   return (
     <>
-      <PageHero
-        eyebrow={t('projects.hero.eyebrow')}
-        title={t('projects.hero.title')}
-        text={t('projects.hero.text')}
-        breadcrumbs={[{ label: t('nav.projects'), to: '/projects' }]}
-        image={{ src: '/media/conference.jpg', alt: 'Illustrative project review meeting' }}
-      />
+      <section className="border-b border-line bg-canvas">
+        <div className="shell pb-12 pt-28 sm:pb-16 sm:pt-32 lg:pb-20 lg:pt-36">
+          <Breadcrumbs items={[{ label: t('nav.projects'), to: '/projects' }]} className="mb-9" />
+          <div className="grid gap-8 lg:grid-cols-[1fr_0.55fr] lg:items-end lg:gap-16">
+            <div>
+              <p className="eyebrow">{t('projects.hero.eyebrow')}</p>
+              <h1 className="mt-4 max-w-4xl text-[clamp(2.4rem,6vw,5.25rem)] font-semibold leading-[0.98] tracking-[-0.055em] text-navy">
+                {t('projects.intelligenceTitle')}
+              </h1>
+            </div>
+            <p className="max-w-xl border-l-2 border-gold pl-5 text-[0.9375rem] leading-[1.85] text-muted lg:mb-1">
+              {t('projects.hero.text')}
+            </p>
+          </div>
+          <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-line pt-4 text-[0.5625rem] font-bold uppercase tracking-[0.16em] text-muted">
+            <span>{t('projects.editorialLabel')}</span>
+            <span className="text-gold-deep" aria-hidden="true">/</span>
+            <span>{t('projects.verifiedContentLabel')}</span>
+          </div>
+        </div>
+      </section>
 
       <section className="section bg-white">
         <div className="shell">
-          <div className="border border-line bg-canvas/60 p-4 sm:p-5">
+          <div className="border-y border-line py-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <SearchField
                 id="project-search"
@@ -101,27 +118,45 @@ export function ProjectsPage() {
                 placeholder={t('projects.searchPlaceholder')}
                 className="w-full lg:max-w-sm"
               />
-              {categoriesQuery.isLoading ? (
-                <p className="text-sm text-muted" role="status">{t('common.loading')}</p>
-              ) : categoriesQuery.isError ? (
-                <p className="text-sm text-danger" role="alert">Project categories could not be loaded.</p>
-              ) : (
-                <div className="no-scrollbar flex gap-2 overflow-x-auto" role="group" aria-label={t('common.filters')}>
-                  <FilterPill active={!category} onClick={() => setFilter('category', '')}>
-                    {t('common.all')}
-                  </FilterPill>
-                  {(categoriesQuery.data ?? []).map((item) => (
-                    <FilterPill
-                      key={item.id}
-                      active={category === item.slug}
-                      onClick={() => setFilter('category', item.slug)}
-                    >
-                      {item.name}
-                    </FilterPill>
+              <label className="flex min-w-52 flex-col gap-1.5">
+                <span className="text-[0.5625rem] font-bold uppercase tracking-[0.14em] text-muted">{t('projects.filterType')}</span>
+                <select
+                  className="h-11 border border-input bg-white px-3 text-sm text-ink"
+                  aria-label={t('projects.filterType')}
+                  value={projectType}
+                  onChange={(event) => setFilter('project_type', event.target.value)}
+                  disabled={projectTypesQuery.isLoading || projectTypesQuery.isError}
+                >
+                  <option value="">{t('projects.allTypes')}</option>
+                  {(projectTypesQuery.data ?? []).map((item) => (
+                    <option key={item.value} value={item.value}>{item.label}</option>
                   ))}
-                </div>
-              )}
+                </select>
+              </label>
             </div>
+            {projectTypesQuery.isError && (
+              <p className="mt-2 text-sm text-danger" role="alert">{t('projects.typeError')}</p>
+            )}
+            {categoriesQuery.isLoading ? (
+              <p className="mt-4 text-sm text-muted" role="status">{t('common.loading')}</p>
+            ) : categoriesQuery.isError ? (
+              <p className="mt-4 text-sm text-danger" role="alert">{t('projects.categoryError')}</p>
+            ) : (
+              <div className="no-scrollbar mt-4 flex gap-2 overflow-x-auto" role="group" aria-label={t('projects.filterCategory')}>
+                <FilterPill active={!category} onClick={() => setFilter('category', '')}>
+                  {t('common.all')}
+                </FilterPill>
+                {(categoriesQuery.data ?? []).map((item) => (
+                  <FilterPill
+                    key={item.id}
+                    active={category === item.slug}
+                    onClick={() => setFilter('category', item.slug)}
+                  >
+                    {item.name}
+                  </FilterPill>
+                ))}
+              </div>
+            )}
           </div>
 
           {featuredQuery.isLoading && (
@@ -155,17 +190,23 @@ export function ProjectsPage() {
                   {t('projects.featured')}
                 </p>
                 <p className="mt-3 text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-white/60">
-                  {featured.categories?.map((item) => item.name).join(' · ')}
-                  {featured.year && ` · ${featured.year}`}
+                  {[featured.projectType, ...(featured.categories?.map((item) => item.name) ?? []), featured.year]
+                    .filter(Boolean)
+                    .join(' · ')}
                 </p>
                 <h2 className="mt-3 text-[clamp(1.35rem,2.4vw,2rem)] font-semibold leading-tight tracking-[-0.03em]">
                   <Link to={`/projects/${featured.slug}`}>{featured.title}</Link>
                 </h2>
                 <p className="mt-4 text-[0.875rem] leading-relaxed text-white/70">{featured.summary}</p>
-                {featured.client && (
+                {featured.location && (
                   <p className="mt-4 flex items-start gap-2 text-[0.75rem] text-white/70">
                     <MapPin className="mt-0.5 size-3.5 shrink-0 text-gold" aria-hidden="true" />
-                    {featured.client}
+                    {featured.location}
+                  </p>
+                )}
+                {featured.client && (
+                  <p className="mt-2 text-[0.6875rem] text-white/65">
+                    <span className="font-semibold text-white/80">{t('projects.client')}:</span> {featured.client}
                   </p>
                 )}
                 <Button asChild variant="gold" className="mt-6 w-fit">
@@ -182,7 +223,7 @@ export function ProjectsPage() {
             <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-muted" aria-live="polite">
               {total} {t('projects.count')}
             </p>
-            {(category || urlQuery) && (
+            {(category || projectType || urlQuery) && (
               <Button variant="link" size="sm" className="h-auto p-0" onClick={clearFilters}>
                 {t('common.clearFilters')}
               </Button>
@@ -223,7 +264,9 @@ export function ProjectsPage() {
                   </Link>
                   <div className="flex flex-1 flex-col p-5">
                     <div className="flex flex-wrap items-center gap-2 text-[0.5rem] font-bold uppercase tracking-[0.14em]">
-                      <span className="text-gold-deep">{project.categories?.map((item) => item.name).join(' · ')}</span>
+                      <span className="text-gold-deep">
+                        {[project.projectType, ...(project.categories?.map((item) => item.name) ?? [])].filter(Boolean).join(' · ')}
+                      </span>
                       {project.year && (
                         <>
                           <span className="text-line-strong" aria-hidden="true">·</span>
@@ -243,10 +286,15 @@ export function ProjectsPage() {
                       {project.summary}
                     </p>
                     <div className="mt-4 space-y-1.5 border-t border-line pt-3.5">
-                      {project.client && (
+                      {project.location && (
                         <p className="flex items-start gap-1.5 text-[0.6875rem] leading-snug text-muted">
                           <MapPin className="mt-0.5 size-3 shrink-0 text-gold-deep" aria-hidden="true" />
-                          <span className="line-clamp-2">{project.client}</span>
+                          <span className="line-clamp-2">{project.location}</span>
+                        </p>
+                      )}
+                      {project.client && (
+                        <p className="line-clamp-2 text-[0.6875rem] leading-snug text-muted">
+                          <span className="font-semibold text-ink/75">{t('projects.client')}:</span> {project.client}
                         </p>
                       )}
                       <Link
@@ -269,7 +317,6 @@ export function ProjectsPage() {
             pageCount={pageCount}
             onChange={(value) => setFilter('page', String(value))}
           />
-          <p className="mt-6 text-[0.6875rem] leading-relaxed text-muted">{t('projects.hero.text')}</p>
         </div>
       </section>
     </>

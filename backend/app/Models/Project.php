@@ -17,6 +17,13 @@ class Project extends Model
         'title',
         'summary',
         'overview',
+        'project_type',
+        'project_date',
+        'context',
+        'objectives',
+        'challenge',
+        'approach',
+        'milestones',
         'client',
         'client_approved',
         'location',
@@ -38,10 +45,13 @@ class Project extends Model
             'client_approved' => 'boolean',
             'location_approved' => 'boolean',
             'scope' => 'array',
+            'objectives' => 'array',
+            'milestones' => 'array',
             'services' => 'array',
             'outcomes' => 'array',
             'featured' => 'boolean',
             'year' => 'integer',
+            'project_date' => 'date',
         ];
     }
 

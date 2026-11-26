@@ -127,6 +127,7 @@ Route::middleware('web')
     ->name('api.project-images.show');
 
 Route::get('/projects/categories', [ProjectController::class, 'categories']);
+Route::get('/projects/types', [ProjectController::class, 'types']);
 Route::get('/projects', [ProjectController::class, 'index']);
 Route::get('/projects/{slug}', [ProjectController::class, 'show']);
 
