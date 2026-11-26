@@ -1,6 +1,6 @@
 import { ArrowUp, Bot, MessageSquare, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useT } from '@/i18n/LanguageProvider'
 import { askAssistant } from '@/services/assistantApi'
@@ -10,11 +10,7 @@ let messageId = 0
 const nextId = () => `msg-${++messageId}`
 
 /**
- * Floating assistant interface.
- *
- * The UI is complete; answers come from the prepared knowledge base in
- * `src/services/assistantApi.js` until the Laravel assistant endpoint is
- * approved. No browser-side provider key is used anywhere.
+ * Floating assistant interface backed by the Laravel API.
  */
 export function AssistantWidget() {
   const t = useT()
@@ -61,8 +57,15 @@ export function AssistantWidget() {
     setInput('')
     setBusy(true)
     try {
-      const answer = await askAssistant(question)
-      setMessages((prev) => [...prev, { id: nextId(), role: 'assistant', text: answer }])
+      const history = messages
+        .filter((message) => message.role === 'user')
+        .slice(-8)
+        .map((message) => ({ role: 'user', content: message.text }))
+      const result = await askAssistant(question, history)
+      setMessages((prev) => [
+        ...prev,
+        { id: nextId(), role: 'assistant', text: result.answer, sources: result.sources ?? [] },
+      ])
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -149,6 +152,24 @@ export function AssistantWidget() {
                 )}
               >
                 {message.text}
+                {message.sources?.length > 0 && (
+                  <div className="mt-2 border-t border-line pt-2">
+                    <p className="text-[0.625rem] font-semibold uppercase tracking-wide text-muted">
+                      {t('assistant.sources')}
+                    </p>
+                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                      {message.sources.map((source) => (
+                        <Link
+                          key={`${source.title}-${source.url}`}
+                          to={source.url}
+                          className="text-[0.6875rem] font-medium text-navy underline decoration-gold underline-offset-2 hover:text-gold"
+                        >
+                          {source.title}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ))}
@@ -229,6 +250,18 @@ export function AssistantWidget() {
             </Button>
           </div>
           <p className="mt-2 text-[0.5625rem] leading-relaxed text-muted">{t('assistant.disclaimer')}</p>
+          <Link
+            to="/contact"
+            className="mt-1 inline-block text-[0.6875rem] font-semibold text-navy underline decoration-gold underline-offset-2"
+          >
+            {t('assistant.contact')}
+          </Link>
+          <Link
+            to="/request-consultation"
+            className="ml-3 inline-block text-[0.6875rem] font-semibold text-navy underline decoration-gold underline-offset-2"
+          >
+            {t('assistant.consultation')}
+          </Link>
         </form>
       </div>
     </>

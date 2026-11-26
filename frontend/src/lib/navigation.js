@@ -183,11 +183,13 @@ export const adminNav = [
   { labelKey: 'admin.nav.registrations', to: '/admin/registrations', icon: 'ClipboardList' },
   { labelKey: 'admin.nav.certificates', to: '/admin/certificates', icon: 'Award' },
   { labelKey: 'admin.nav.news', to: '/admin/news', icon: 'Newspaper' },
+  { labelKey: 'admin.nav.events', to: '/admin/events', icon: 'CalendarDays' },
   { labelKey: 'admin.nav.media', to: '/admin/media', icon: 'Images' },
   { labelKey: 'admin.nav.inquiries', to: '/admin/inquiries', icon: 'Inbox' },
   { labelKey: 'admin.nav.analytics', to: '/admin/analytics', icon: 'ChartNoAxesCombined' },
   { labelKey: 'admin.nav.users', to: '/admin/users', icon: 'Users' },
   { labelKey: 'admin.nav.settings', to: '/admin/settings', icon: 'Settings' },
+  { labelKey: 'admin.nav.security', to: '/admin/security', icon: 'KeyRound' },
 ]
 
 export const serviceCategories = [

@@ -74,8 +74,9 @@ class ServicesApiTest extends TestCase
         ]);
         $administrator->forceFill(['is_admin' => true])->save();
 
+        $this->withHeader('Origin', 'http://localhost');
         $this->getJson('/api/auth/me')->assertUnauthorized();
-        $this->getJson('/api/auth/csrf-cookie')->assertNoContent();
+        $this->get('/sanctum/csrf-cookie')->assertNoContent();
 
         $this->postJson('/api/auth/login', [
             'email' => $administrator->email,

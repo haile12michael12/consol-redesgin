@@ -12,27 +12,39 @@ class RoleController extends Controller
 {
     public function index(): JsonResponse
     {
-        return response()->json(Role::query()
+        $this->authorize('viewAny', Role::class);
+
+        $roles = Role::query()
             ->with('permissions')
             ->withCount('users')
             ->orderBy('label')
-            ->get()
-            ->map(fn (Role $role) => $this->present($role)));
+            ->get();
+        $presentedRoles = [];
+
+        foreach ($roles as $role) {
+            $presentedRoles[] = $this->present($role);
+        }
+
+        return response()->json($presentedRoles);
     }
 
     public function permissions(): JsonResponse
     {
+        $this->authorize('viewAny', Role::class);
+
         return response()->json(Permission::query()->orderBy('name')->get(['id', 'name', 'label']));
     }
 
     public function store(Request $request): JsonResponse
     {
+        $this->authorize('create', Role::class);
         $values = $request->validate([
             'name' => ['required', 'string', 'max:80', 'regex:/^[a-z][a-z0-9_]*$/', 'unique:roles,name'],
             'label' => ['required', 'string', 'max:120'],
             'permission_ids' => ['required', 'array'],
             'permission_ids.*' => ['required', 'integer', 'exists:permissions,id'],
         ]);
+        $this->ensurePrivilegedPermissionsRequireSuperAdmin($request, $values['permission_ids']);
         $role = Role::query()->create([
             'name' => $values['name'],
             'label' => $values['label'],
@@ -45,12 +57,14 @@ class RoleController extends Controller
 
     public function update(Request $request, Role $role): JsonResponse
     {
+        $this->authorize('update', $role);
         abort_if($role->is_system, 403, 'System roles cannot be changed.');
         $values = $request->validate([
             'label' => ['required', 'string', 'max:120'],
             'permission_ids' => ['required', 'array'],
             'permission_ids.*' => ['required', 'integer', 'exists:permissions,id'],
         ]);
+        $this->ensurePrivilegedPermissionsRequireSuperAdmin($request, $values['permission_ids']);
         $role->update(['label' => $values['label']]);
         $role->permissions()->sync($values['permission_ids']);
 
@@ -59,6 +73,7 @@ class RoleController extends Controller
 
     public function destroy(Role $role): JsonResponse
     {
+        $this->authorize('delete', $role);
         abort_if($role->is_system, 403, 'System roles cannot be deleted.');
         if ($role->users()->exists()) {
             return response()->json(['message' => 'Remove users from this role before deleting it.'], 409);
@@ -82,5 +97,21 @@ class RoleController extends Controller
                 'label' => $permission->label,
             ])->values(),
         ];
+    }
+
+    private function ensurePrivilegedPermissionsRequireSuperAdmin(Request $request, array $permissionIds): void
+    {
+        if ($request->user()->isSuperAdministrator()) {
+            return;
+        }
+
+        abort_if(
+            Permission::query()
+                ->whereIn('id', $permissionIds)
+                ->whereIn('name', ['users.manage', 'settings.manage'])
+                ->exists(),
+            403,
+            'Only a super administrator can delegate user or settings administration.',
+        );
     }
 }

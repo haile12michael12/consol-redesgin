@@ -39,4 +39,15 @@ class RoleAccessTest extends TestCase
             ->getJson('/api/admin/analytics')
             ->assertForbidden();
     }
+
+    public function test_configured_project_manager_can_manage_projects_but_not_training(): void
+    {
+        $manager = User::factory()->create(['is_admin' => false]);
+        $role = Role::query()->where('name', 'project_manager')->firstOrFail();
+        $manager->roles()->attach($role);
+
+        $this->actingAs($manager)->getJson('/api/admin/projects')->assertOk();
+        $this->getJson('/api/admin/training/courses')->assertForbidden();
+        $this->assertFalse($manager->hasPermission('events.manage'));
+    }
 }

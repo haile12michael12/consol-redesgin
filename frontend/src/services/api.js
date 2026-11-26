@@ -5,8 +5,8 @@ import axios from 'axios'
  *
  * - Base URL comes from VITE_API_BASE_URL (local and production).
  * - Sanctum: cookie-based session auth for the admin area. `withCredentials`
- *   is enabled so Laravel can set the XSRF-TOKEN / session cookies once
- *   Sanctum is wired up. No tokens are stored in localStorage.
+ *   is enabled for Laravel's XSRF-TOKEN / session cookies. No tokens are
+ *   stored in localStorage.
  * - Backend secrets never reach this file.
  */
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000/api'
@@ -31,6 +31,23 @@ api.interceptors.request.use((config) => {
   }
   return config
 })
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const requestUrl = error?.config?.url ?? ''
+    const isAdminRequest = requestUrl.startsWith('/admin/')
+      || requestUrl.startsWith('/auth/me')
+      || requestUrl.startsWith('/auth/sessions')
+      || requestUrl.startsWith('/auth/password')
+
+    if (error?.response?.status === 401 && isAdminRequest && typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('consol:auth-expired'))
+    }
+
+    return Promise.reject(error)
+  },
+)
 
 /** Normalised error shape so UI components never depend on Axios internals. */
 export function normaliseError(error) {

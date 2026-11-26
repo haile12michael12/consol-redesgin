@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/Textarea'
 import { usePageMeta } from '@/lib/seo'
 import { normaliseError } from '@/services/api'
 import { newsAdminApi } from '@/services/newsApi'
+import { toast } from 'sonner'
 
 const TABS = [
   ['articles', 'Articles', Newspaper],
@@ -299,18 +300,22 @@ function CategoryManager({ categories, onSave, onDelete, pending }) {
   )
 }
 
-export function NewsAdminPage() {
+export function NewsAdminPage({ initialTab = 'articles' }) {
   const queryClient = useQueryClient()
-  const [tab, setTab] = useState('articles')
+  const dedicatedEvents = initialTab === 'events'
+  const [tab, setTab] = useState(initialTab)
   const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState('')
   const [editor, setEditor] = useState(null)
   const [requestError, setRequestError] = useState('')
-  usePageMeta({ title: 'News, events and resources administration', noindex: true })
+  const params = { page, per_page: 20, q: search || undefined, status: status || undefined }
+  usePageMeta({ title: tab === 'events' ? 'Events administration' : 'News and resources administration', noindex: true })
 
-  const articleQuery = useQuery({ queryKey: ['admin-news', 'articles', page], queryFn: () => newsAdminApi.listArticles({ page, per_page: 20 }) })
-  const categoryQuery = useQuery({ queryKey: ['admin-news', 'categories'], queryFn: newsAdminApi.categories })
-  const eventQuery = useQuery({ queryKey: ['admin-news', 'events', page], queryFn: () => newsAdminApi.listEvents({ page, per_page: 20 }) })
-  const resourceQuery = useQuery({ queryKey: ['admin-news', 'resources', page], queryFn: () => newsAdminApi.listResources({ page, per_page: 20 }) })
+  const articleQuery = useQuery({ queryKey: ['admin-news', 'articles', params], queryFn: () => newsAdminApi.listArticles(params), enabled: tab === 'articles' })
+  const categoryQuery = useQuery({ queryKey: ['admin-news', 'categories'], queryFn: newsAdminApi.categories, enabled: tab === 'articles' || tab === 'categories' })
+  const eventQuery = useQuery({ queryKey: ['admin-news', 'events', params], queryFn: () => newsAdminApi.listEvents(params), enabled: tab === 'events' })
+  const resourceQuery = useQuery({ queryKey: ['admin-news', 'resources', params], queryFn: () => newsAdminApi.listResources(params), enabled: tab === 'resources' })
   const currentQuery = tab === 'articles' ? articleQuery : tab === 'events' ? eventQuery : resourceQuery
   const records = currentQuery.data?.data ?? []
 
@@ -338,6 +343,7 @@ export function NewsAdminPage() {
       refresh(variables.kind)
       setEditor(null)
       setRequestError('')
+      toast.success(`${variables.kind === 'events' ? 'Event' : variables.kind === 'articles' ? 'Article' : 'Resource'} saved.`)
     },
     onError: (failure) => setRequestError(normaliseError(failure).message),
   })
@@ -347,16 +353,25 @@ export function NewsAdminPage() {
       events: newsAdminApi.deleteEvent,
       resources: newsAdminApi.deleteResource,
     })[kind](id),
-    onSuccess: (_, variables) => refresh(variables.kind),
+    onSuccess: (_, variables) => {
+      refresh(variables.kind)
+      toast.success(`${variables.kind === 'events' ? 'Event' : variables.kind === 'articles' ? 'Article' : 'Resource'} deleted.`)
+    },
     onError: (failure) => setRequestError(normaliseError(failure).message),
   })
   const categoryMutation = useMutation({
     mutationFn: ({ id, ...values }) => id ? newsAdminApi.updateCategory(id, values) : newsAdminApi.createCategory(values),
-    onSuccess: () => refresh('categories'),
+    onSuccess: () => {
+      refresh('categories')
+      toast.success('Category saved.')
+    },
   })
   const deleteCategory = useMutation({
     mutationFn: newsAdminApi.deleteCategory,
-    onSuccess: () => refresh('categories'),
+    onSuccess: () => {
+      refresh('categories')
+      toast.success('Category deleted.')
+    },
     onError: (failure) => setRequestError(normaliseError(failure).message),
   })
 
@@ -370,8 +385,14 @@ export function NewsAdminPage() {
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-navy">News, events & resources</h2>
-          <p className="mt-1 max-w-2xl text-sm text-muted">Manage approved publications, confirmed events, and resources cleared for public release.</p>
+          <h2 className="text-2xl font-semibold tracking-tight text-navy">
+            {tab === 'events' ? 'Events management' : 'News & resources'}
+          </h2>
+          <p className="mt-1 max-w-2xl text-sm text-muted">
+            {tab === 'events'
+              ? 'Manage confirmed events and their public listing.'
+              : 'Manage approved publications and resources cleared for public release.'}
+          </p>
         </div>
         {tab !== 'categories' && (
           <div className="flex gap-2">
@@ -381,13 +402,39 @@ export function NewsAdminPage() {
         )}
       </div>
       {requestError && !editor && <ErrorState title="Content operation failed" text={requestError} onRetry={() => currentQuery.refetch()} />}
-      <div className="flex flex-wrap gap-2 border-b border-line pb-3" role="tablist" aria-label="Content type">
-        {TABS.map(([key, label, Icon]) => (
-          <Button key={key} type="button" role="tab" aria-selected={tab === key} variant={tab === key ? 'primary' : 'outline'} size="sm" onClick={() => { setTab(key); setEditor(null); setRequestError(''); setPage(1) }}>
-            <Icon className="size-3.5" />{label}
-          </Button>
-        ))}
-      </div>
+      {!dedicatedEvents && (
+        <div className="flex flex-wrap gap-2 border-b border-line pb-3" role="tablist" aria-label="Content type">
+          {TABS.map(([key, label, Icon]) => (
+            <Button key={key} type="button" role="tab" aria-selected={tab === key} variant={tab === key ? 'primary' : 'outline'} size="sm" onClick={() => { setTab(key); setEditor(null); setRequestError(''); setPage(1); setSearch(''); setStatus('') }}>
+              <Icon className="size-3.5" />{label}
+            </Button>
+          ))}
+        </div>
+      )}
+
+      {tab !== 'categories' && (
+        <div className="flex flex-wrap gap-3">
+          <Input
+            type="search"
+            value={search}
+            onChange={(event) => { setSearch(event.target.value); setPage(1) }}
+            placeholder={`Search ${tab}…`}
+            aria-label={`Search ${tab}`}
+            className="max-w-sm"
+          />
+          <select
+            value={status}
+            onChange={(event) => { setStatus(event.target.value); setPage(1) }}
+            aria-label={`Filter ${tab} by status`}
+            className="h-10 border border-line bg-white px-3 text-sm"
+          >
+            <option value="">All statuses</option>
+            <option value="draft">Draft</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="published">Published</option>
+          </select>
+        </div>
+      )}
 
       {editor ? (
         <ContentForm

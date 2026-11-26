@@ -7,8 +7,8 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 #[Fillable(['name', 'email', 'password', 'is_active'])]
@@ -49,7 +49,11 @@ class User extends Authenticatable
 
     public function hasPermission(string $permission): bool
     {
-        if ($this->is_admin || $this->hasRole('administrator')) {
+        if (! $this->is_active) {
+            return false;
+        }
+
+        if ($this->is_admin || $this->hasRole('administrator') || $this->hasRole('super_admin')) {
             return true;
         }
 
@@ -65,6 +69,15 @@ class User extends Authenticatable
 
     public function isAdministrator(): bool
     {
-        return $this->is_active && ($this->is_admin || $this->hasRole('administrator'));
+        return $this->is_active && (
+            $this->is_admin
+            || $this->hasRole('administrator')
+            || $this->hasRole('super_admin')
+        );
+    }
+
+    public function isSuperAdministrator(): bool
+    {
+        return $this->is_active && ($this->is_admin || $this->hasRole('super_admin'));
     }
 }

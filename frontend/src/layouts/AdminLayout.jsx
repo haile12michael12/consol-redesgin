@@ -3,6 +3,7 @@ import {
   Bell,
   Briefcase,
   Building2,
+  CalendarDays,
   ChartNoAxesCombined,
   ClipboardList,
   ExternalLink,
@@ -11,6 +12,7 @@ import {
   GraduationCap,
   Images,
   Inbox,
+  KeyRound,
   LayoutDashboard,
   Menu,
   Newspaper,
@@ -19,7 +21,7 @@ import {
   Users,
   X,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { Logo } from '@/components/common/Logo'
@@ -36,6 +38,7 @@ const icons = {
   LayoutDashboard,
   Files,
   Building2,
+  CalendarDays,
   Briefcase,
   FolderKanban,
   GraduationCap,
@@ -47,6 +50,7 @@ const icons = {
   ChartNoAxesCombined,
   Users,
   Settings,
+  KeyRound,
 }
 
 function SidebarLink({ item, onNavigate }) {
@@ -81,6 +85,7 @@ const permissionByPath = {
   '/admin/registrations': 'registrations.manage',
   '/admin/certificates': 'certificates.manage',
   '/admin/news': 'news.manage',
+  '/admin/events': 'events.manage',
   '/admin/media': 'media.manage',
   '/admin/inquiries': 'inquiries.manage',
   '/admin/analytics': 'analytics.view',
@@ -90,10 +95,10 @@ const permissionByPath = {
 
 function Sidebar({ onNavigate, user }) {
   const t = useT()
-  const isAdministrator = user.is_admin || user.roles?.some((role) => role.name === 'administrator')
+  const isAdministrator = user.is_admin || user.roles?.some((role) => ['administrator', 'super_admin'].includes(role.name))
   const permissions = new Set(user.roles?.flatMap((role) => role.permissions.map((permission) => permission.name)) ?? [])
   const visibleNavigation = adminNav.filter((item) => (
-    isAdministrator || permissions.has(permissionByPath[item.to])
+    !permissionByPath[item.to] || isAdministrator || permissions.has(permissionByPath[item.to])
   ))
   return (
     <div className="flex h-full flex-col bg-navy">
@@ -146,6 +151,15 @@ export function AdminLayout() {
     },
   })
 
+  useEffect(() => {
+    const handleExpiredSession = () => {
+      queryClient.removeQueries({ queryKey: ['auth', 'me'] })
+      navigate('/admin/login', { replace: true, state: { from: location } })
+    }
+    window.addEventListener('consol:auth-expired', handleExpiredSession)
+    return () => window.removeEventListener('consol:auth-expired', handleExpiredSession)
+  }, [location, navigate, queryClient])
+
   const pageTitle = useMemo(() => {
     const match = adminNav.find((item) => location.pathname.startsWith(item.to))
     return match ? t(match.labelKey) : t('admin.nav.dashboard')
@@ -153,7 +167,10 @@ export function AdminLayout() {
 
   if (auth.isPending) return <LoadingState className="shell section" label="Checking administrator access…" />
   if (auth.isError) {
-    if (auth.error?.response?.status === 401 || auth.error?.response?.status === 403) {
+    if (auth.error?.response?.status === 403) {
+      return <Unauthorized />
+    }
+    if (auth.error?.response?.status === 401) {
       return <Navigate to="/admin/login" replace state={{ from: location }} />
     }
     return (
@@ -174,13 +191,25 @@ export function AdminLayout() {
     ?? (location.pathname === '/admin' ? adminNav[0] : null)
   const requiredPermission = activeSection ? permissionByPath[activeSection.to] : null
   const userPermissions = new Set(auth.data.roles?.flatMap((role) => role.permissions.map((permission) => permission.name)) ?? [])
-  const isAdministrator = auth.data.is_admin || auth.data.roles?.some((role) => role.name === 'administrator')
+  const isAdministrator = auth.data.is_admin || auth.data.roles?.some((role) => ['administrator', 'super_admin'].includes(role.name))
   if (requiredPermission && !isAdministrator && !userPermissions.has(requiredPermission)) {
     const firstAllowedSection = adminNav.find((item) => userPermissions.has(permissionByPath[item.to]))
     if (firstAllowedSection) return <Navigate to={firstAllowedSection.to} replace />
     return (
       <div className="shell section">
-        <ErrorState title="No administration modules assigned" text="Ask an administrator to assign an access role to your account." />
+        <Unauthorized />
+      </div>
+    )
+  }
+
+  function Unauthorized() {
+    return (
+      <div className="shell section">
+        <div className="mx-auto max-w-lg border border-line bg-white p-8 text-center">
+          <h1 className="text-xl font-semibold text-navy">Administrator access required</h1>
+          <p className="mt-2 text-sm text-muted">Your account is not authorised for this area. Contact a CONSOL super administrator if you believe this is an error.</p>
+          <Link className="mt-5 inline-flex text-sm font-semibold text-gold-deep underline" to="/">Return to the website</Link>
+        </div>
       </div>
     )
   }

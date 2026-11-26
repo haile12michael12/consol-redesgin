@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AnalyticsController;
+use App\Http\Controllers\Api\AssistantController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CertificateController;
 use App\Http\Controllers\Api\CourseController;
@@ -22,35 +23,44 @@ Route::get('/health', fn () => response()->json([
     'service' => 'CONSOL backend',
 ]));
 
-Route::middleware('web')->prefix('auth')->group(function () {
-    Route::get('/csrf-cookie', fn () => response()->noContent());
+Route::post('/assistant/chat', [AssistantController::class, 'chat'])->middleware('throttle:10,1');
+
+Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
-    Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth');
-    Route::get('/me', [AuthController::class, 'me'])->middleware('auth');
+    Route::post('/password/forgot', [AuthController::class, 'forgotPassword'])->middleware('throttle:3,1');
+    Route::post('/password/reset', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1');
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/me', [AuthController::class, 'me']);
+        Route::put('/password', [AuthController::class, 'changePassword']);
+        Route::get('/sessions', [AuthController::class, 'sessions']);
+        Route::delete('/sessions/others', [AuthController::class, 'revokeOtherSessions']);
+        Route::delete('/sessions/{sessionId}', [AuthController::class, 'revokeSession']);
+    });
 });
 
-Route::middleware(['web', 'auth', 'admin', 'permission:services.manage'])->prefix('admin/services')->group(function () {
+Route::middleware(['auth:sanctum', 'admin', 'permission:services.manage'])->prefix('admin/services')->group(function () {
     Route::get('/', [ServiceController::class, 'adminIndex']);
     Route::post('/', [ServiceController::class, 'store']);
     Route::put('/{service}', [ServiceController::class, 'update']);
     Route::delete('/{service}', [ServiceController::class, 'destroy']);
 });
 
-Route::middleware(['web', 'auth', 'admin', 'permission:pages.manage'])->prefix('admin/pages')->group(function () {
+Route::middleware(['auth:sanctum', 'admin', 'permission:pages.manage'])->prefix('admin/pages')->group(function () {
     Route::get('/', [PageController::class, 'adminIndex']);
     Route::post('/', [PageController::class, 'store']);
     Route::put('/{page}', [PageController::class, 'update']);
     Route::delete('/{page}', [PageController::class, 'destroy']);
 });
 
-Route::middleware(['web', 'auth', 'admin', 'permission:media.manage'])->prefix('admin/media')->group(function () {
+Route::middleware(['auth:sanctum', 'admin', 'permission:media.manage'])->prefix('admin/media')->group(function () {
     Route::get('/', [MediaController::class, 'index']);
     Route::post('/', [MediaController::class, 'store']);
     Route::get('/{media}/file', [MediaController::class, 'file'])->name('api.admin.media.file');
     Route::delete('/{media}', [MediaController::class, 'destroy']);
 });
 
-Route::middleware(['web', 'auth', 'admin', 'permission:settings.manage'])->prefix('admin/settings')->group(function () {
+Route::middleware(['auth:sanctum', 'admin', 'permission:settings.manage'])->prefix('admin/settings')->group(function () {
     Route::get('/', [SettingController::class, 'index']);
     Route::post('/', [SettingController::class, 'store']);
     Route::put('/{setting}', [SettingController::class, 'update']);
@@ -59,14 +69,14 @@ Route::middleware(['web', 'auth', 'admin', 'permission:settings.manage'])->prefi
 
 Route::get('/settings/public', [SettingController::class, 'publicIndex']);
 
-Route::middleware(['web', 'auth', 'admin', 'permission:users.manage'])->prefix('admin/users')->group(function () {
+Route::middleware(['auth:sanctum', 'admin', 'permission:users.manage'])->prefix('admin/users')->group(function () {
     Route::get('/', [UserController::class, 'index']);
     Route::post('/', [UserController::class, 'store']);
     Route::put('/{user}', [UserController::class, 'update']);
     Route::delete('/{user}', [UserController::class, 'destroy']);
 });
 
-Route::middleware(['web', 'auth', 'admin', 'permission:users.manage'])->prefix('admin/roles')->group(function () {
+Route::middleware(['auth:sanctum', 'admin', 'permission:users.manage'])->prefix('admin/roles')->group(function () {
     Route::get('/', [RoleController::class, 'index']);
     Route::get('/permissions', [RoleController::class, 'permissions']);
     Route::post('/', [RoleController::class, 'store']);
@@ -77,10 +87,10 @@ Route::middleware(['web', 'auth', 'admin', 'permission:users.manage'])->prefix('
 Route::get('/pages', [PageController::class, 'index']);
 Route::get('/pages/{slug}', [PageController::class, 'show']);
 
-Route::middleware(['web', 'auth', 'admin', 'permission:analytics.view'])
+Route::middleware(['auth:sanctum', 'admin', 'permission:analytics.view'])
     ->get('/admin/analytics', [AnalyticsController::class, 'summary']);
 
-Route::middleware(['web', 'auth', 'admin', 'permission:inquiries.manage'])->prefix('admin/inquiries')->group(function () {
+Route::middleware(['auth:sanctum', 'admin', 'permission:inquiries.manage'])->prefix('admin/inquiries')->group(function () {
     Route::get('/', [InquiryController::class, 'adminIndex']);
     Route::get('/assignees', [InquiryController::class, 'assignees']);
     Route::get('/export', [InquiryController::class, 'export']);
@@ -92,7 +102,7 @@ Route::middleware(['web', 'auth', 'admin', 'permission:inquiries.manage'])->pref
 Route::post('/inquiries', [InquiryController::class, 'storeContact'])->middleware('throttle:5,1');
 Route::post('/consultations', [InquiryController::class, 'storeConsultation'])->middleware('throttle:5,1');
 
-Route::middleware(['web', 'auth', 'admin', 'permission:projects.manage'])->prefix('admin/projects')->group(function () {
+Route::middleware(['auth:sanctum', 'admin', 'permission:projects.manage'])->prefix('admin/projects')->group(function () {
     Route::get('/', [ProjectController::class, 'adminIndex']);
     Route::post('/', [ProjectController::class, 'store']);
     Route::put('/{project}', [ProjectController::class, 'update']);
@@ -114,7 +124,7 @@ Route::get('/projects/{slug}', [ProjectController::class, 'show']);
 Route::get('/services', [ServiceController::class, 'index']);
 Route::get('/services/{slug}', [ServiceController::class, 'show']);
 
-Route::middleware(['web', 'auth', 'admin', 'permission:news.manage'])->prefix('admin/news')->group(function () {
+Route::middleware(['auth:sanctum', 'admin', 'permission:news.manage'])->prefix('admin/news')->group(function () {
     Route::get('/', [NewsController::class, 'adminArticles']);
     Route::post('/', [NewsController::class, 'storeArticle']);
     Route::put('/{newsArticle}', [NewsController::class, 'updateArticle']);
@@ -126,14 +136,14 @@ Route::middleware(['web', 'auth', 'admin', 'permission:news.manage'])->prefix('a
     Route::delete('/categories/{category}', [NewsController::class, 'destroyCategory']);
 });
 
-Route::middleware(['web', 'auth', 'admin', 'permission:news.manage'])->prefix('admin/events')->group(function () {
+Route::middleware(['auth:sanctum', 'admin', 'permission:events.manage'])->prefix('admin/events')->group(function () {
     Route::get('/', [NewsController::class, 'adminEvents']);
     Route::post('/', [NewsController::class, 'storeEvent']);
     Route::put('/{event}', [NewsController::class, 'updateEvent']);
     Route::delete('/{event}', [NewsController::class, 'destroyEvent']);
 });
 
-Route::middleware(['web', 'auth', 'admin', 'permission:resources.manage'])->prefix('admin/resources')->group(function () {
+Route::middleware(['auth:sanctum', 'admin', 'permission:resources.manage'])->prefix('admin/resources')->group(function () {
     Route::get('/', [NewsController::class, 'adminResources']);
     Route::post('/', [NewsController::class, 'storeResource']);
     Route::put('/{resource}', [NewsController::class, 'updateResource']);
@@ -157,7 +167,7 @@ Route::get('/events', [NewsController::class, 'events']);
 Route::get('/events/{slug}', [NewsController::class, 'showEvent']);
 Route::get('/resources', [NewsController::class, 'resources']);
 
-Route::middleware(['web', 'auth', 'admin', 'permission:training.manage,registrations.manage,certificates.manage'])->prefix('admin/training')->group(function () {
+Route::middleware(['auth:sanctum', 'admin', 'permission:training.manage,registrations.manage,certificates.manage'])->prefix('admin/training')->group(function () {
     Route::get('/courses', [CourseController::class, 'adminIndex']);
     Route::post('/courses', [CourseController::class, 'store']);
     Route::put('/courses/{course}', [CourseController::class, 'update']);

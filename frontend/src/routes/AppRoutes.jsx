@@ -88,6 +88,12 @@ const ConsultationPage = lazy(() =>
 const AdminLoginPage = lazy(() =>
   import('@/pages/admin/AdminLoginPage').then((m) => ({ default: m.AdminLoginPage })),
 )
+const AdminPasswordPage = lazy(() =>
+  import('@/pages/admin/AdminPasswordPage').then((m) => ({ default: m.AdminPasswordPage })),
+)
+const AdminSecurityPage = lazy(() =>
+  import('@/pages/admin/AdminSecurityPage').then((m) => ({ default: m.AdminSecurityPage })),
+)
 const DashboardPage = lazy(() =>
   import('@/pages/admin/DashboardPage').then((m) => ({ default: m.DashboardPage })),
 )
@@ -192,6 +198,8 @@ export default function AppRoutes() {
       </Route>
 
       <Route path="/admin/login" element={<SuspenseBoundary><AdminLoginPage /></SuspenseBoundary>} />
+      <Route path="/admin/forgot-password" element={<SuspenseBoundary><AdminPasswordPage /></SuspenseBoundary>} />
+      <Route path="/admin/reset-password" element={<SuspenseBoundary><AdminPasswordPage /></SuspenseBoundary>} />
 
       <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<SuspenseBoundary><DashboardPage /></SuspenseBoundary>} />
@@ -226,6 +234,10 @@ export default function AppRoutes() {
           element={<SuspenseBoundary><NewsAdminPage /></SuspenseBoundary>}
         />
         <Route
+          path="events"
+          element={<SuspenseBoundary><NewsAdminPage initialTab="events" /></SuspenseBoundary>}
+        />
+        <Route
           path="media"
           element={<SuspenseBoundary><MediaAdminPage /></SuspenseBoundary>}
         />
@@ -242,6 +254,7 @@ export default function AppRoutes() {
           element={<SuspenseBoundary><UsersAdminPage /></SuspenseBoundary>}
         />
         <Route path="settings" element={<SuspenseBoundary><SettingsPage /></SuspenseBoundary>} />
+        <Route path="security" element={<SuspenseBoundary><AdminSecurityPage /></SuspenseBoundary>} />
       </Route>
     </Routes>
   )

@@ -6,6 +6,7 @@ use App\Models\CorporateEvent;
 use App\Models\NewsArticle;
 use App\Models\NewsCategory;
 use App\Models\ResourceDocument;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -61,6 +62,30 @@ class NewsApiTest extends TestCase
             ->assertJsonPath('data.0.slug', $upcoming->slug)
             ->assertJsonPath('total', 1);
         $this->getJson('/api/events/draft-event')->assertNotFound();
+    }
+
+    public function test_events_admin_filters_and_permissions_allow_assigned_content_editors(): void
+    {
+        $matching = $this->createEvent('matching-draft-event', now()->addDays(3), null, 'draft');
+        $this->createEvent('other-published-event', now()->addDays(4), null, 'published');
+
+        $editor = User::factory()->create(['is_admin' => false]);
+        $editor->roles()->attach(Role::query()->where('name', 'content_editor')->firstOrFail());
+
+        $this->actingAs($editor)
+            ->getJson('/api/admin/events?q=matching&status=draft')
+            ->assertOk()
+            ->assertJsonPath('data.0.id', $matching->id)
+            ->assertJsonPath('total', 1);
+
+        $this->actingAs($editor)->post('/api/admin/events', [
+            'title' => 'Editor-created event',
+            'slug' => 'editor-created-event',
+            'summary' => 'An event created by an assigned content editor.',
+            'starts_at' => now()->addDays(5)->toDateTimeString(),
+            'venue' => 'CONSOL',
+            'status' => 'draft',
+        ], ['Accept' => 'application/json'])->assertCreated();
     }
 
     public function test_resource_download_requires_public_approval_and_published_status(): void

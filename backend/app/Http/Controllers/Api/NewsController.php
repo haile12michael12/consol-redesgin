@@ -171,6 +171,7 @@ class NewsController extends Controller
     {
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:200'],
+            'status' => ['nullable', Rule::in(['draft', 'scheduled', 'published'])],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],
         ]);
@@ -181,6 +182,7 @@ class NewsController extends Controller
                 ->where(fn (Builder $query) => $query
                     ->where('title', 'like', '%'.$term.'%')
                     ->orWhere('slug', 'like', '%'.$term.'%')))
+            ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->where('status', $status))
             ->orderByDesc('updated_at')
             ->paginate($filters['per_page'] ?? 20)
             ->through(fn (NewsArticle $article) => $this->presentArticle($article, true));
@@ -264,6 +266,7 @@ class NewsController extends Controller
     {
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:200'],
+            'status' => ['nullable', Rule::in(['draft', 'scheduled', 'published'])],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],
         ]);
@@ -274,6 +277,7 @@ class NewsController extends Controller
                     ->where(fn (Builder $query) => $query
                         ->where('title', 'like', '%'.$term.'%')
                         ->orWhere('slug', 'like', '%'.$term.'%')))
+                ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->where('status', $status))
                 ->orderByDesc('updated_at')
                 ->paginate($filters['per_page'] ?? 20)
                 ->through(fn (CorporateEvent $event) => $this->presentEvent($event, true)),
@@ -303,6 +307,7 @@ class NewsController extends Controller
     {
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:200'],
+            'status' => ['nullable', Rule::in(['draft', 'scheduled', 'published'])],
             'page' => ['nullable', 'integer', 'min:1'],
             'per_page' => ['nullable', 'integer', 'min:1', 'max:50'],
         ]);
@@ -313,6 +318,7 @@ class NewsController extends Controller
                     ->where(fn (Builder $query) => $query
                         ->where('title', 'like', '%'.$term.'%')
                         ->orWhere('slug', 'like', '%'.$term.'%')))
+                ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->where('status', $status))
                 ->orderByDesc('updated_at')
                 ->paginate($filters['per_page'] ?? 20)
                 ->through(fn (ResourceDocument $resource) => $this->presentResource($resource, true)),

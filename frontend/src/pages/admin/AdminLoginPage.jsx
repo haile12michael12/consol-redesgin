@@ -30,10 +30,7 @@ export function AdminLoginPage() {
     defaultValues: { email: '', password: '' },
   })
 
-  /**
-   * Demo sign-in: no credentials leave the browser. When Laravel Sanctum is
-   * connected this handler calls getCsrfCookie() then login() from authApi.
-   */
+  /** Sign in through Laravel's CSRF-protected Sanctum session flow. */
   const onSubmit = async (credentials) => {
     setStatus('pending')
     try {
@@ -136,6 +133,10 @@ export function AdminLoginPage() {
             </form>
 
             <p className="mt-4 text-[0.6875rem] leading-relaxed text-muted">{t('admin.login.notice')}</p>
+
+            <Link to="/admin/forgot-password" className="mt-4 inline-flex text-sm font-medium text-gold-deep underline">
+              Forgot your password?
+            </Link>
 
             <div className="mt-8 border-t border-line pt-5">
               <Button asChild variant="link" size="sm" className="h-auto p-0">

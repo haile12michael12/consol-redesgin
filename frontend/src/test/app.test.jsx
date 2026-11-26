@@ -1,6 +1,9 @@
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
+import { AssistantWidget } from '@/components/common/AssistantWidget'
+import { LanguageProvider } from '@/i18n/LanguageProvider'
 import { me } from '@/services/authApi'
 import App from '@/App'
 
@@ -61,6 +64,13 @@ vi.mock('@/services/authApi', () => ({
   login: vi.fn(),
   logout: vi.fn(),
   me: vi.fn(),
+}))
+
+vi.mock('@/services/assistantApi', () => ({
+  askAssistant: vi.fn(async () => ({
+    answer: 'CONSOL is a consulting, training and research institute.',
+    sources: [{ title: 'About CONSOL', url: '/about' }],
+  })),
 }))
 
 import { submitRegistration } from '@/services/coursesApi'
@@ -419,13 +429,20 @@ describe('forms', () => {
 describe('assistant interface', () => {
   it('answers a service question from published information', async () => {
     const user = userEvent.setup()
-    renderApp('/')
-    await user.click(screen.getByRole('button', { name: /open consol assistant/i }))
+    render(
+      <LanguageProvider>
+        <MemoryRouter>
+          <AssistantWidget />
+        </MemoryRouter>
+      </LanguageProvider>,
+    )
+    await user.click(await screen.findByRole('button', { name: /open consol assistant/i }))
     const dialog = await screen.findByRole('dialog', { name: /consol assistant/i })
     await user.click(within(dialog).getByRole('button', { name: /what does consol do\?/i }))
     expect(
       await within(dialog).findByText(/consulting, training and research institute/i),
     ).toBeInTheDocument()
+    expect(within(dialog).getByRole('link', { name: 'About CONSOL' })).toHaveAttribute('href', '/about')
   })
 })
 
