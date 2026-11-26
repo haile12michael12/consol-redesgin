@@ -89,7 +89,7 @@ describe('content translations admin', () => {
     const user = userEvent.setup()
     renderPage()
 
-    await screen.findByText('Approved company update')
+    await screen.findByRole('heading', { name: 'Approved company update' })
     await user.type(screen.getByRole('textbox', { name: 'Title — አማርኛ' }), 'የዜና ርዕስ')
     await user.type(screen.getByRole('textbox', { name: 'Excerpt — አማርኛ' }), 'የዜና ማጠቃለያ')
     await user.click(screen.getByRole('button', { name: 'Submit for approval' }))
