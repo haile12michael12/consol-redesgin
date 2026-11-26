@@ -46,14 +46,16 @@ export function CertificateVerificationPage() {
           </p>
           <form onSubmit={onSubmit} className="mt-7 space-y-4">
             <Field label="Verification code" htmlFor="verification-code" required>
-              <Input
-                id="verification-code"
-                value={code}
-                onChange={(event) => setCode(event.target.value)}
-                autoComplete="off"
-                maxLength={40}
-                required
-              />
+              {(aria) => (
+                <Input
+                  {...aria}
+                  value={code}
+                  onChange={(event) => setCode(event.target.value)}
+                  autoComplete="off"
+                  maxLength={40}
+                  required
+                />
+              )}
             </Field>
             <Button type="submit" variant="primary" disabled={pending || !code.trim()}>
               <Search className="size-4" />

@@ -73,7 +73,8 @@ vi.mock('@/services/assistantApi', () => ({
   })),
 }))
 
-import { submitRegistration } from '@/services/coursesApi'
+import { submitRegistration, verifyCertificate } from '@/services/coursesApi'
+import { fetchServices } from '@/services/servicesApi'
 
 vi.mock('@/services/newsApi', () => {
   const article = {
@@ -290,6 +291,13 @@ describe('public routes', () => {
     expect(await screen.findByText('Page not found')).toBeInTheDocument()
   })
 
+  it('renders the certificate verification form', async () => {
+    renderApp('/verify-certificate')
+    expect(await screen.findByRole('heading', { name: 'Certificate verification' })).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: /verification code/i })).toBeInTheDocument()
+    expect(verifyCertificate).not.toHaveBeenCalled()
+  })
+
   it('requires administrator authentication before opening the admin dashboard', async () => {
     renderApp('/admin/dashboard')
     expect(
@@ -423,6 +431,20 @@ describe('forms', () => {
     )
     await user.click(screen.getByRole('button', { name: /request consultation/i }))
     expect(await screen.findByText(/please select a service category/i)).toBeInTheDocument()
+  })
+
+  it('uses published service records from the API for consultation options', async () => {
+    const user = userEvent.setup()
+    fetchServices.mockResolvedValueOnce({
+      data: [{ slug: 'api-published-service', title: 'API-published service' }],
+      source: 'api',
+      error: null,
+    })
+    renderApp('/request-consultation')
+    await screen.findByRole('heading', { level: 1, name: /request a consultation/i })
+    await user.click(screen.getAllByRole('combobox')[0])
+    expect(await screen.findByRole('option', { name: 'API-published service' })).toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: 'Construction Management Consultancy' })).not.toBeInTheDocument()
   })
 })
 

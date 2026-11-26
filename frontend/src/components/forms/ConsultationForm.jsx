@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useSearchParams } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
@@ -18,7 +18,7 @@ export function ConsultationForm() {
   const t = useT()
   const [searchParams] = useSearchParams()
   const { data: publishedServices, error: servicesError, isLoading: servicesLoading } = useServices()
-  const services = publishedServices ?? []
+  const services = useMemo(() => publishedServices ?? [], [publishedServices])
   const requestedService = searchParams.get('service')
   const [status, setStatus] = useState('idle')
   const [source, setSource] = useState(null)
